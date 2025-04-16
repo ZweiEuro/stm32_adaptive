@@ -109,29 +109,7 @@ uint16_t USART_GetString(char *buffer, uint16_t bufsize)
     /* Return number of characters in buffer */
     return i;
 }
-//*************************************************************************************
-uint8_t USART_BufferEmpty(void)
-{
-    USART_t *u = USART_INT_GetUsart(USART1);
-    /* Check if number of characters is zero in buffer */
-    return (u->Num == 0 && u->In == u->Out);
-}
-//*************************************************************************************
-uint8_t USART_BufferFull(void)
-{
-    USART_t *u = USART_INT_GetUsart(USART1);
-    /* Check if number of characters is the same as buffer size */
-    return (u->Num == u->Size);
-}
-//*************************************************************************************
-void USART_ClearBuffer(void)
-{
-    USART_t *u = USART_INT_GetUsart(USART1);
-    /* Reset variables */
-    u->Num = 0;
-    u->In = 0;
-    u->Out = 0;
-}
+
 //*************************************************************************************
 uint8_t USART_FindCharacter(uint8_t c)
 {
