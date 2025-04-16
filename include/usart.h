@@ -118,6 +118,10 @@ extern "C"
      * @retval None
      */
     void USART_ClearBuffer(void);
+
+    void USART_SendFloat(float num);
+    void USART_SendInt(int num);
+
 // ---------------------------------------------------------------------------
 /* C++ detection */
 #ifdef __cplusplus

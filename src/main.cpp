@@ -30,6 +30,7 @@ int main(void)
   USART_Init(9600);
 
   USART_SendString("hello world!\n");
+  USART_SendInt(2000);
 
   while (1)
   {

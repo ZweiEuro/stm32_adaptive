@@ -1,4 +1,6 @@
 #include "usart.h"
+#include <stdio.h>
+
 //*************************************************************************************
 /* Set variables for buffers */
 uint8_t USART_Buffer[USART_BUFFER_SIZE];
@@ -193,6 +195,22 @@ void USART_SendString(char *str)
         USART1->TDR = (uint16_t)(*str++);
     }
 }
+
+void USART_SendInt(int num)
+{
+    char buffer[20] = {0};
+    int ret = sprintf(buffer, "%d", num);
+
+    if (0 >= ret || ret > sizeof(buffer))
+    {
+        USART_SendString("[UART ERR] Could not send int value!\n");
+    }
+    else
+    {
+        USART_SendString(buffer);
+    }
+}
+
 //*************************************************************************************
 void USART_SendBytes(uint8_t *DataArray, uint16_t count)
 {
