@@ -1,10 +1,13 @@
-#include "usart.h"
+#include "usart.hpp"
 #include <stdio.h>
+
+#include "ringbuffer.hpp"
 
 //*************************************************************************************
 /* Set variables for buffers */
 uint8_t USART_Buffer[USART_BUFFER_SIZE];
 USART_t usart1 = {0, 0, 0, USART_BUFFER_SIZE, USART_Buffer, 0};
+
 //*************************************************************************************
 /* Private function */
 static inline USART_t *USART_INT_GetUsart(USART_TypeDef *USARTx)
@@ -158,7 +161,7 @@ uint8_t USART_FindCharacter(uint8_t c)
     return 0;
 }
 //*************************************************************************************
-void USART_SendChar(char c)
+void send(const char c)
 {
     USART_t *u = USART_INT_GetUsart(USART1);
     /* If we are not initialized */
@@ -177,42 +180,47 @@ void USART_SendChar(char c)
     }
 }
 //*************************************************************************************
-void USART_SendString(char *str)
+
+void send(const char *v)
 {
-    USART_t *u = USART_INT_GetUsart(USART1);
-    /* If we are not initialized */
-    if (u->Initialized == 0)
+    while ((*v) != '\0')
     {
-        return;
-    }
-    /* Go through entire string */
-    while (*str)
-    {
-        /* Wait to be ready, buffer empty */
-        while (!(USART1->ISR & USART_ISR_TC))
-            ;
-        /* Send data */
-        USART1->TDR = (uint16_t)(*str++);
+        send(*v);
+        v++;
     }
 }
 
-void USART_SendInt(int num)
+void send(const int v)
 {
     char buffer[20] = {0};
-    int ret = sprintf(buffer, "%d", num);
+    int ret = sprintf(buffer, "%d", v);
 
-    if (0 >= ret || ret > sizeof(buffer))
+    if (0 >= ret || ret > (int)sizeof(buffer))
     {
-        USART_SendString("[UART ERR] Could not send int value!\n");
+        send("[UART ERR] Could not send int value!\n");
     }
     else
     {
-        USART_SendString(buffer);
+        send(buffer);
+    }
+}
+void send(const float v)
+{
+    char buffer[20] = {0};
+    int ret = sprintf(buffer, "%d", v);
+
+    if (0 >= ret || ret > (int)sizeof(buffer))
+    {
+        send("[UART ERR] Could not send int value!\n");
+    }
+    else
+    {
+        send(buffer);
     }
 }
 
 //*************************************************************************************
-void USART_SendBytes(uint8_t *DataArray, uint16_t count)
+void send_bytes(uint8_t *DataArray, uint16_t count)
 {
     USART_t *u = USART_INT_GetUsart(USART1);
     /* If we are not initialized */
@@ -231,7 +239,7 @@ void USART_SendBytes(uint8_t *DataArray, uint16_t count)
     }
 }
 //*************************************************************************************
-void USART_SendBytesAsHex(uint8_t *DataArray, uint16_t count, char separator)
+void send_bytes_as_hex(uint8_t *DataArray, uint16_t count, char separator)
 {
     char str[2];
     USART_t *u = USART_INT_GetUsart(USART1);
@@ -268,29 +276,38 @@ void USART_SendBytesAsHex(uint8_t *DataArray, uint16_t count, char separator)
     }
 }
 
-//*************************************************************************************
-void USART1_IRQHandler(void)
+#ifdef __cplusplus
+extern "C"
 {
-    GPIOA->ODR ^= (1 << 4);
+#endif
 
-    /* Check if interrupt was because data is received */
-    if (USART1->ISR & USART_ISR_RXNE)
+    //*************************************************************************************
+    void USART1_IRQHandler(void)
     {
-        /* Put received data into internal buffer */
-        USART_t *u = USART_INT_GetUsart(USART1);
-        if (u->Num < u->Size)
+        GPIOA->ODR ^= (1 << 4);
+
+        /* Check if interrupt was because data is received */
+        if (USART1->ISR & USART_ISR_RXNE)
         {
-            /* Check overflow */
-            if (u->In == u->Size)
+            /* Put received data into internal buffer */
+            USART_t *u = USART_INT_GetUsart(USART1);
+            if (u->Num < u->Size)
             {
-                u->In = 0;
+                /* Check overflow */
+                if (u->In == u->Size)
+                {
+                    u->In = 0;
+                }
+                /* Add to buffer */
+                u->Buffer[u->In] = USART1->RDR;
+                u->In++;
+                u->Num++;
             }
-            /* Add to buffer */
-            u->Buffer[u->In] = USART1->RDR;
-            u->In++;
-            u->Num++;
         }
-        USART1->ISR = 0;
     }
+    //*************************************************************************************
+
+// Declarations of this file
+#ifdef __cplusplus
 }
-//*************************************************************************************
+#endif

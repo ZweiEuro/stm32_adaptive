@@ -1,7 +1,8 @@
 #include "stm32f030x6.h"
 
-#include "usart.h"
+#include "usart.hpp"
 #include "rcc.h"
+#include "ringbuffer.hpp"
 
 #define LEDPORT (GPIOA)
 #define LED1 (4)
@@ -29,9 +30,7 @@ int main(void)
   RCC_Init();
   USART_Init(9600);
 
-  USART_SendString("hello world!\n");
-  USART_SendInt(2000);
-
+  send("hello world!\n");
   while (1)
   {
 
@@ -39,7 +38,7 @@ int main(void)
     if (USART_GetString(buffer, sizeof(buffer)))
     {
       /* Return string back */
-      USART_SendString(buffer);
+      send(buffer);
     }
   }
 
