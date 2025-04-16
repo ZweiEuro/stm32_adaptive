@@ -1,4 +1,8 @@
-#include "stm32f0xx.h"
+#include "stm32f030x6.h"
+
+#include "usart.h"
+#include "rcc.h"
+
 #define LEDPORT (GPIOA)
 #define LED1 (4)
 #define ENABLE_GPIO_CLOCK (RCC->AHBENR |= RCC_AHBENR_GPIOAEN)
@@ -17,12 +21,25 @@ void ms_delay(int ms)
 // Alternates blue and green LEDs quickly
 int main(void)
 {
+
   ENABLE_GPIO_CLOCK;           // enable the clock to GPIO
   LEDPORT->MODER |= GPIOMODER; // set pins to be general purpose output
-  for (;;)
+
+  char buffer[64];
+  RCC_Init();
+  USART_Init(9600);
+
+  USART_SendString("hello world!\n");
+
+  while (1)
   {
-    ms_delay(500);
-    LEDPORT->ODR ^= (1 << LED1); // toggle diodes
+
+    /* Get string */
+    if (USART_GetString(buffer, sizeof(buffer)))
+    {
+      /* Return string back */
+      USART_SendString(buffer);
+    }
   }
 
   return 0;

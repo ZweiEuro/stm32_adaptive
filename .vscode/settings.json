@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.mdx": "mdx",
+        "stm32f0xx.h": "c",
+        "rcc.h": "c"
+    }
+}
