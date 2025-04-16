@@ -1,26 +1,29 @@
-#include <Arduino.h>
+#include "stm32f0xx.h"
+#define LEDPORT (GPIOA)
+#define LED1 (4)
+#define ENABLE_GPIO_CLOCK (RCC->AHBENR |= RCC_AHBENR_GPIOAEN)
+#define GPIOMODER (GPIO_MODER_MODER4_0)
 
-// put function declarations here:
-int myFunction(int, int);
-
-void setup()
+void ms_delay(int ms)
 {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
-
-  pinMode(PA4, OUTPUT);
+  while (ms-- > 0)
+  {
+    volatile int x = 500;
+    while (x-- > 0)
+      __asm("nop");
+  }
 }
 
-void loop()
+// Alternates blue and green LEDs quickly
+int main(void)
 {
-  // put your main code here, to run repeatedly:
+  ENABLE_GPIO_CLOCK;           // enable the clock to GPIO
+  LEDPORT->MODER |= GPIOMODER; // set pins to be general purpose output
+  for (;;)
+  {
+    ms_delay(500);
+    LEDPORT->ODR ^= (1 << LED1); // toggle diodes
+  }
 
-  digitalToggle(PA4);
-  delay(1000);
-}
-
-// put function definitions here:
-int myFunction(int x, int y)
-{
-  return x + y;
+  return 0;
 }
