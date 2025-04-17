@@ -1,8 +1,6 @@
 #include "usart.hpp"
 #include <stdio.h>
 
-#include "ringbuffer.hpp"
-
 //*************************************************************************************
 /* Set variables for buffers */
 uint8_t USART_Buffer[USART_BUFFER_SIZE];

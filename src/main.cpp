@@ -1,8 +1,8 @@
 #include "stm32f030x6.h"
 
 #include "usart.hpp"
-#include "rcc.h"
-#include "ringbuffer.hpp"
+#include "rcc.hpp"
+#include "SignalBuffer.hpp"
 #include "input_capture.hpp"
 
 void setup_onboard_led()
@@ -32,18 +32,31 @@ int main(void)
   setup_onboard_led();
 
   char buffer[64];
-  RCC_Init();
+  rcc::RCC_init();
+  rcc::SYSTICK_init();
+
   USART_Init(9600);
 
   send("hello world!\n");
 
+  const uint16_t sync[] = {360, 11160, 0, 0, 0, 0, 0, 0};         // sync
+  const uint16_t zero_bit[] = {360, 1080, 360, 1080, 0, 0, 0, 0}; // 0
+  const uint16_t one_bit[] = {360, 1080, 1080, 360, 0, 0, 0, 0};  // 1
+
+  auto test = ic::PeriodPattern<8>(sync);
+
+  test.match_window(sync);
+
   ic::init_ic();
 
-  while (1)
+    while (1)
   {
     toggle_onboard();
 
     ms_delay(1000);
+
+    send(rcc::getSystick());
+    send('\n');
   }
 
   return 0;

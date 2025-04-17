@@ -1,7 +1,6 @@
 
 #include "input_capture.hpp"
 #include "stm32f030x6.h"
-#include "usart.hpp"
 
 static inline void set_bits(uint32_t *registry, uint32_t pattern, uint32_t position = 0)
 {
@@ -126,4 +125,5 @@ namespace ic
 #ifdef __cplusplus
     }
 #endif
+
 }
