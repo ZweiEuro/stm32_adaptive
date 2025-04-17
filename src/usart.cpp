@@ -183,6 +183,21 @@ void send(const int v)
     }
 }
 
+void send(const uint32_t v)
+{
+    char buffer[20] = {0};
+    int ret = sprintf(buffer, "%ld", v);
+
+    if (0 >= ret || ret > (int)sizeof(buffer))
+    {
+        send("[UART ERR] Could not send uint32_t value!\n");
+    }
+    else
+    {
+        send(buffer);
+    }
+}
+
 void send_bin(uint32_t v)
 {
 
@@ -192,11 +207,11 @@ void send_bin(uint32_t v)
     {
         if (v & (1 << (31 - i))) // we walk in reverse
         {
-            send('1');
+            send("1 ");
         }
         else
         {
-            send('0');
+            send("0 ");
         }
     }
 }
