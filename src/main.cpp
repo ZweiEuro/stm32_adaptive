@@ -11,6 +11,11 @@ void setup_onboard_led()
   GPIOA->MODER |= GPIO_MODER_MODER4_0; // set pins to be general purpose output
 }
 
+void toggle_onboard()
+{
+  GPIOA->ODR ^= (1 << 4);
+}
+
 void ms_delay(int ms)
 {
   while (ms-- > 0)
@@ -36,13 +41,9 @@ int main(void)
 
   while (1)
   {
+    toggle_onboard();
 
-    /* Get string */
-    if (USART_GetString(buffer, sizeof(buffer)))
-    {
-      /* Return string back */
-      send(buffer);
-    }
+    ms_delay(1000);
   }
 
   return 0;

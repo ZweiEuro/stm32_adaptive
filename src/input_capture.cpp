@@ -48,6 +48,7 @@ namespace ic
 
         // no filtering:
         TIM3->CCMR1 &= ~(TIM_CCMR1_IC1F); // clear to 0
+        TIM3->CCMR1 |= (0b01 << TIM_CCMR1_CC1S_Pos);
 
         // set reset mode
         TIM3->SMCR &= ~TIM_SMCR_SMS;               // clear it
@@ -63,10 +64,7 @@ namespace ic
         TIM3->CCER |= TIM_CCER_CC1E;
         TIM3->CCER |= (TIM_CCER_CC1P | TIM_CCER_CC1NP); // capture rising and falling edges
 
-
-
         TIM3->DIER |= TIM_DIER_CC1IE; // capture 1 interrupt enable
-        TIM3->DIER |= TIM_DIER_TIE;   // enable trigger interrupts
 
         TIM3->DIER |= TIM_DIER_UIE; // enable update interrupts
         TIM3->CR1 |= TIM_CR1_URS;   // only throw update interrupts on overflow
@@ -107,29 +105,20 @@ namespace ic
 
             static uint32_t overflow_counter = 0;
 
-            static uint32_t prev = 0;
+            if (SR & TIM_SR_CC1IF)
+            {
+
+                send("Period: ");
+                send(TIM3->CCR1 + (overflow_counter << 16));
+                send("\n");
+
+                overflow_counter = 0;
+            }
 
             if (SR & TIM_SR_UIF)
             {
                 overflow_counter++;
             }
-
-            if (SR & TIM_SR_TIF)
-            {
-            }
-
-            if (prev != SR)
-            {
-
-                send("SR: ");
-                send_bin(SR);
-                send(TIM3->CCR1);
-                send("\n");
-            }
-
-            prev = SR;
-
-            GPIOA->ODR ^= (1 << 4);
         }
         //*************************************************************************************
 
