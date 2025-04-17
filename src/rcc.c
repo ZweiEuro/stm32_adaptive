@@ -53,7 +53,7 @@ void RCC_Init(void)
     /* Select PLL as system Clock */
     RCC->CFGR &= ~RCC_CFGR_SW;
     RCC->CFGR |= RCC_CFGR_SW_HSE;
-    /* Wait for PLL to become system core clock */
+    /* Wait for HSE to become system core clock */
     while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_HSE)
         ;
 #endif

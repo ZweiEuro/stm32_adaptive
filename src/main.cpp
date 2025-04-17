@@ -3,11 +3,13 @@
 #include "usart.hpp"
 #include "rcc.h"
 #include "ringbuffer.hpp"
+#include "input_capture.hpp"
 
-#define LEDPORT (GPIOA)
-#define LED1 (4)
-#define ENABLE_GPIO_CLOCK (RCC->AHBENR |= RCC_AHBENR_GPIOAEN)
-#define GPIOMODER (GPIO_MODER_MODER4_0)
+void setup_onboard_led()
+{
+  RCC->AHBENR |= RCC_AHBENR_GPIOAEN;   // enable the clock to GPIO
+  GPIOA->MODER |= GPIO_MODER_MODER4_0; // set pins to be general purpose output
+}
 
 void ms_delay(int ms)
 {
@@ -22,15 +24,16 @@ void ms_delay(int ms)
 // Alternates blue and green LEDs quickly
 int main(void)
 {
-
-  ENABLE_GPIO_CLOCK;           // enable the clock to GPIO
-  LEDPORT->MODER |= GPIOMODER; // set pins to be general purpose output
+  setup_onboard_led();
 
   char buffer[64];
   RCC_Init();
   USART_Init(9600);
 
   send("hello world!\n");
+
+  ic::init_ic();
+
   while (1)
   {
 

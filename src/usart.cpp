@@ -182,6 +182,25 @@ void send(const int v)
         send(buffer);
     }
 }
+
+void send_bin(uint32_t v)
+{
+
+    send("0b");
+
+    for (int i = 0; i < 32; i++)
+    {
+        if (v & (1 << (31 - i))) // we walk in reverse
+        {
+            send('1');
+        }
+        else
+        {
+            send('0');
+        }
+    }
+}
+
 void send(const float v)
 {
     char buffer[20] = {0};

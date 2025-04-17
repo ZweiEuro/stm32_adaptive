@@ -36,4 +36,6 @@ void send(const char *v);
 void send(const int v);
 void send(const float v);
 
+void send_bin(uint32_t v);
+
 // ---------------------------------------------------------------------------
