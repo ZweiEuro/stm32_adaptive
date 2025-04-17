@@ -31,10 +31,15 @@ namespace rcc
             ;
         /* Peripheral Clock divisors */
         RCC->CFGR2 |= RCC_CFGR2_PREDIV_DIV1;
+
+#if 0
+      // if we want 48 Mhz we can upscale the 8mhz HSE with the PLL
+      
         /* PLLCLK */
         RCC->CFGR &= ~(RCC_CFGR_PLLSRC);
         RCC->CFGR &= RCC_CFGR_PLLMUL;
         RCC->CFGR |= (RCC_CFGR_PLLSRC_HSE_PREDIV | RCC_CFGR_PLLMUL6);
+#endif
 #endif
 
 #if 0 // enable PLL
@@ -65,10 +70,11 @@ namespace rcc
 
     void SYSTICK_init(void)
     {
-        return;
-        SysTick->VAL = 0;
+        return; // if this is commented it the thing getss stuck
 
-        SysTick->CTRL |= 1 << SysTick_CTRL_CLKSOURCE_Pos; // select core
+        SysTick->VAL = 1;
+
+        SysTick->CTRL |= (1 << SysTick_CTRL_CLKSOURCE_Pos); // select core
         SysTick->LOAD = (F_CPU / 1000) - 1;
 
         NVIC_EnableIRQ(SysTick_IRQn);
