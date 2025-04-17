@@ -184,7 +184,7 @@ void send(const int v)
 void send(const uint32_t v)
 {
     char buffer[20] = {0};
-    int ret = sprintf(buffer, "%ld", v);
+    int ret = sprintf(buffer, "%lu", v);
 
     if (0 >= ret || ret > (int)sizeof(buffer))
     {

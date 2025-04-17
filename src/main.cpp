@@ -5,6 +5,8 @@
 #include "SignalBuffer.hpp"
 #include "input_capture.hpp"
 
+#include "util.hpp"
+
 void setup_onboard_led()
 {
   RCC->AHBENR |= RCC_AHBENR_GPIOAEN;   // enable the clock to GPIO
@@ -16,26 +18,17 @@ void toggle_onboard()
   GPIOA->ODR ^= (1 << 4);
 }
 
-void ms_delay(int ms)
-{
-  while (ms-- > 0)
-  {
-    volatile int x = 500;
-    while (x-- > 0)
-      __asm("nop");
-  }
-}
-
 // Alternates blue and green LEDs quickly
 int main(void)
 {
   setup_onboard_led();
 
-  char buffer[64];
-  rcc::RCC_init();
   rcc::SYSTICK_init();
+  rcc::RCC_init();
 
   USART_Init(9600);
+
+  ic::init_ic();
 
   send("hello world!\n");
 
@@ -47,15 +40,13 @@ int main(void)
 
   test.match_window(sync);
 
-  ic::init_ic();
-
-    while (1)
+  while (1)
   {
     toggle_onboard();
 
-    ms_delay(1000);
+    util::delay_ms(1000);
 
-    send(rcc::getSystick());
+    send((uint32_t)rcc::getSystick());
     send('\n');
   }
 

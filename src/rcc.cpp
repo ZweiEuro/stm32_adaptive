@@ -70,25 +70,24 @@ namespace rcc
 
     void SYSTICK_init(void)
     {
-        return; // if this is commented it the thing getss stuck
 
         SysTick->VAL = 1;
 
-        SysTick->CTRL |= (1 << SysTick_CTRL_CLKSOURCE_Pos); // select core
         SysTick->LOAD = (F_CPU / 1000) - 1;
+        SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk; // select core
 
         NVIC_EnableIRQ(SysTick_IRQn);
 
         // enable the sys tick
-        SysTick->CTRL |= (1 << SysTick_CTRL_ENABLE_Pos);
+        SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
 
         // enable sys tick interrupt
-        SysTick->CTRL |= (1 << SysTick_CTRL_TICKINT_Pos);
+        SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
     }
 
-    uint32_t systick_ms = 0;
+    uint64_t systick_ms = 0;
 
-    uint32_t getSystick()
+    uint64_t getSystick()
     {
 
         return systick_ms;
@@ -98,7 +97,7 @@ namespace rcc
     extern "C"
     {
 #endif
-        void SysTick_IRQHandler(void)
+        void SysTick_Handler(void)
         {
             systick_ms++;
         }
