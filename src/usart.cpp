@@ -214,21 +214,6 @@ void send_bin(uint32_t v)
     }
 }
 
-void send(const float v)
-{
-    char buffer[20] = {0};
-    int ret = sprintf(buffer, "%d", v);
-
-    if (0 >= ret || ret > (int)sizeof(buffer))
-    {
-        send("[UART ERR] Could not send int value!\n");
-    }
-    else
-    {
-        send(buffer);
-    }
-}
-
 //*************************************************************************************
 void send_bytes(uint8_t *DataArray, uint16_t count)
 {

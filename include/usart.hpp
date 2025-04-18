@@ -35,7 +35,25 @@ void send(const char *v);
 
 void send(const int v);
 void send(const uint32_t v);
-void send(const float v);
+
+template <typename T>
+void send_array(T *array, int size)
+{
+
+    send("[");
+
+    for (int i = 0; i < size; i++)
+    {
+
+        send(array[i]);
+        if (i < (size - 1))
+        {
+            send(", ");
+        }
+    }
+
+    send("]");
+}
 
 void send_bin(uint32_t v);
 

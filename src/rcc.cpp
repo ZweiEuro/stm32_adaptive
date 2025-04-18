@@ -87,6 +87,7 @@ namespace rcc
 
     uint64_t systick_ms = 0;
 
+    // Sys time in ms
     uint64_t getSystick()
     {
 
