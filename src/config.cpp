@@ -30,8 +30,9 @@ namespace conf
 
     void handle_usart(void)
     {
-        uint8_t byte = USART_GetByte();
-        if (byte == 0)
+        uint8_t byte;
+
+        if (USART_GetByte(byte) == false)
         {
             return;
         }
@@ -39,7 +40,9 @@ namespace conf
         switch (byte)
         {
         case C_SETUP:
-            n_patterns = USART_GetByte(true);
+            uint8_t byte;
+            USART_GetByte(byte, true);
+            n_patterns = byte;
 
             for (int i = 0; i < n_patterns; i++)
             {
@@ -51,14 +54,16 @@ namespace conf
                 {
                     // get the two parts of the number
                     uint8_t time_parts[2] = {0};
-                    time_parts[1] = USART_GetByte(true); // the first part is the UPPER value
-                    time_parts[0] = USART_GetByte(true);
-
+                    USART_GetByte(byte, true); // the first part is the UPPER value
+                    time_parts[1] = byte;
+                    USART_GetByte(byte, true);
+                    time_parts[0] = byte;
                     // re-interpret the two uint8_t as a single uint16_t
                     tmp[period_i] = *((uint16_t *)time_parts);
                 }
 
-                float t_frac = USART_GetByte(true); // value between 1 - 255 representing fraction of percentage
+                USART_GetByte(byte, true); // value between 1 - 255 representing fraction of percentage
+                float t_frac = byte;
                 tolerance = t_frac / 255.0;
 
                 add_pattern(new ic::PeriodPattern(tmp, tolerance));
@@ -71,6 +76,7 @@ namespace conf
         {
             send("print config: n = ");
             send(n_patterns);
+            send('\n');
 
             for (int i = 0; i < n_patterns; i++)
             {

@@ -13,7 +13,7 @@
 void USART_Init(uint32_t baudrate);
 
 // USART
-uint8_t USART_GetByte(bool blocking = false);
+bool USART_GetByte(uint8_t &dest, bool blocking = false);
 
 // overloaded senders
 void send(const char v);

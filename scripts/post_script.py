@@ -35,14 +35,18 @@ def after_upload(source, target, env):
 
     # go into setup mode
     stm32.write(int(1).to_bytes(1,'big'))
+    time.sleep(0.1)
 
     stm32.write(int(len(protos)).to_bytes(1,'big'))
+    time.sleep(0.1)
 
     for p in protos:
         for v in p.timings:
             stm32.write(int(v).to_bytes(2, 'big'))
-        stm32.write(int(p.tolerance * 255).to_bytes(1, 'big'))
+            time.sleep(0.1)
 
+        stm32.write(int(p.tolerance * 255).to_bytes(1, 'big'))
+        time.sleep(0.1)
     stm32.close()
 
 

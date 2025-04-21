@@ -2,10 +2,14 @@
 #include <stdio.h>
 #include "util.hpp"
 
+#include <cstring>
+
 /* Set variables for buffers */
 typedef struct
 {
     uint8_t buffer[USART_BUFFER_SIZE];
+    bool occupied[USART_BUFFER_SIZE];
+
     int read_head = 0;
     int write_head = 0;
 } USART;
@@ -16,6 +20,9 @@ USART usart;
 
 void USART_Init(uint32_t baudrate)
 {
+
+    memset(usart.occupied, false, sizeof(usart.occupied));
+
     /* Enable GPIOA clock */
     RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
     /* Enable USART clock */
@@ -44,25 +51,32 @@ void USART_Init(uint32_t baudrate)
     USART1->CR1 |= USART_CR1_UE;
 }
 
-uint8_t USART_GetByte(bool blocking)
+bool USART_GetByte(uint8_t &dest, bool blocking)
 {
-    uint8_t ret = usart.buffer[usart.read_head];
+    GPIOA->ODR ^= (1 << 4);
 
-    while (ret == 0 && blocking)
+    if (blocking)
     {
-        ret = usart.buffer[usart.read_head];
-        util::delay_ms(100);
+
+        while (usart.occupied[usart.read_head] == false)
+        {
+            util::delay_ms(10);
+        }
+    }
+    else
+    {
+        // if its not occupied, we cant return anything
+        if (usart.occupied[usart.read_head] == false)
+        {
+            return false;
+        }
     }
 
-    if (ret != 0)
-    {
-        usart.read_head = (usart.read_head + 1) % USART_BUFFER_SIZE;
-
-        // show activity
-        GPIOA->ODR ^= (1 << 4);
-    }
-
-    return ret;
+    // we made sure there is data there that we want
+    dest = usart.buffer[usart.read_head];
+    usart.occupied[usart.read_head] = false;
+    usart.read_head = (usart.read_head + 1) % USART_BUFFER_SIZE;
+    return true;
 }
 
 void send(const char c)
@@ -152,14 +166,13 @@ extern "C"
         GPIOA->ODR ^= (1 << 4);
 
         /* Check if interrupt was because data is received */
-        send_bin(USART1->ISR);
-        send('\n');
         if (USART1->ISR & USART_ISR_RXNE)
         {
 
-            if (usart.buffer[usart.write_head] == 0)
+            if (usart.occupied[usart.write_head] == false)
             {
                 usart.buffer[usart.write_head] = USART1->RDR;
+                usart.occupied[usart.write_head] = true;
                 usart.write_head = (usart.write_head + 1) % USART_BUFFER_SIZE;
             }
         }
