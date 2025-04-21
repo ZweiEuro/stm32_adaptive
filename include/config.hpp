@@ -24,7 +24,10 @@ namespace conf
     {
         C_IDLE = 0,
         C_SETUP,
-        C_PRINT,
+        C_START = 's', // start input capture
+        C_HALT = 'h',  // halt input capture
+        C_PRINT = 'p', // character 'p'
+        C_FLUSH = 'f', // print out all the "found" things
 
         // END
         M_MAX

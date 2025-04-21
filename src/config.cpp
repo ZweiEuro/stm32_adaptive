@@ -4,6 +4,7 @@
 #include "config.hpp"
 
 #include "stdlib.h"
+#include "main.hpp"
 
 namespace conf
 {
@@ -71,8 +72,19 @@ namespace conf
 
             break;
 
+        case C_START:
+            ic::enable_ic();
+            break;
+        case C_HALT:
+            ic::disable_ic();
+            break;
+        case C_FLUSH:
+
+            send_array(global::found_signals, sizeof(global::found_signals));
+            send('\n');
+            break;
+
         case C_PRINT:
-        case 'p':
         {
             send("print config: n = ");
             send(n_patterns);

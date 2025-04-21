@@ -53,7 +53,6 @@ void USART_Init(uint32_t baudrate)
 
 bool USART_GetByte(uint8_t &dest, bool blocking)
 {
-    GPIOA->ODR ^= (1 << 4);
 
     if (blocking)
     {
@@ -163,7 +162,6 @@ extern "C"
 
     void USART1_IRQHandler(void)
     {
-        GPIOA->ODR ^= (1 << 4);
 
         /* Check if interrupt was because data is received */
         if (USART1->ISR & USART_ISR_RXNE)

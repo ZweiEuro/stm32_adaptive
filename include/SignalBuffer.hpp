@@ -33,7 +33,7 @@ namespace sb
             free(_buffer);
         }
 
-        void push(uint16_t val)
+        bool push(uint16_t val)
         {
 
             if (((_write_head + 1) % _size) == _read_head)
@@ -41,11 +41,12 @@ namespace sb
                 send("[ERR] Write head hit read head\n");
                 // the write head has caught up with the read head
                 // this should never really happen
-                return;
+                return false;
             }
 
             _buffer[_write_head] = val;
             _write_head = (_write_head + 1) % _size;
+            return true;
         }
 
         /**
@@ -56,13 +57,13 @@ namespace sb
 
             for (int i = 0; i < window_length; i++)
             {
-                if (_buffer[_read_head + i] == 0 ||
-                    (_read_head + i == _write_head) // hit the write head (this means we are "done")
+                if (_buffer[(_read_head + i) % _size] == 0 ||
+                    ((_read_head + i) % _size == _write_head) // hit the write head (this means we are "done")
                 )
                 {
                     return false;
                 }
-                window[i] = _buffer[_read_head + i];
+                window[i] = _buffer[(_read_head + i) % _size];
             }
 
             return true;
@@ -72,7 +73,7 @@ namespace sb
         {
             for (int i = 0; i < amount; i++)
             {
-                _buffer[_read_head + i] = 0;
+                _buffer[(_read_head + i) % _size] = 0;
             }
             _read_head = (_read_head + amount) % _size;
         }

@@ -98,8 +98,9 @@ namespace ic
     extern "C"
     {
 #endif
+
+        // only start processing interrupts after a second has passed
         uint64_t last_time_interrupted = 0;
-        bool done = false;
 
         //*************************************************************************************
         void TIM3_IRQHandler(void)
@@ -108,24 +109,24 @@ namespace ic
             volatile uint32_t SR = TIM3->SR;
             TIM3->SR = 0;
 
-            if (done)
-            {
-                return;
-            }
-
             static uint32_t overflow_counter = 0;
 
             if (SR & TIM_SR_CC1IF)
             {
                 const auto period = TIM3->CCR1 + (overflow_counter << 16);
-
-                // discard the value if its larger than 16 bit can hold
-                if (period < UINT16_MAX)
-                {
-                    signalBuffer.push(period);
-                    last_time_interrupted = rcc::getSystick();
-                }
                 overflow_counter = 0;
+
+                if (period >= UINT16_MAX || period < 200)
+                {
+                    // skip
+                }
+                else
+                {
+                    if (signalBuffer.push(period))
+                    {
+                        last_time_interrupted = rcc::getSystick();
+                    }
+                }
             }
 
             if (SR & TIM_SR_UIF)
@@ -140,6 +141,11 @@ namespace ic
     }
 #endif
 
+    uint64_t get_last_time_interrupted()
+    {
+        return last_time_interrupted;
+    }
+
     int process_signals()
     {
 
@@ -148,40 +154,27 @@ namespace ic
 
         if (!signalBuffer.getWindow(window, 8))
         {
-            return 0;
+            return -1;
         }
 
         if (rcc::getSystick() < last_time_interrupted + 1000)
         {
-            return 0;
+            return -1;
         }
-
-        done = true;
 
         for (int i = 0; i < conf::n_patterns; i++)
         {
-
             if (conf::period_patterns[i]->match_window(window))
             {
 
-                signalBuffer.shift_read_head(conf::period_patterns[i]->getLength() - 1);
-                send("found Signal: ");
-                send(i);
-                send(" ");
-                send_array(window, 8);
-                send('\n');
+                signalBuffer.shift_read_head(conf::period_patterns[i]->getLength());
                 return i;
             }
         }
 
-        send("found nothing ");
-        send(" ");
-        send_array(window, 8);
-        send('\n');
-
         signalBuffer.shift_read_head();
 
-        return 0;
+        return -1;
     }
 
     // CLASS
@@ -196,7 +189,7 @@ namespace ic
         {
             if (periods[i] == 0)
             {
-                _length = i + 1;
+                _length = i;
                 break;
             }
         }
@@ -267,7 +260,9 @@ namespace ic
 
     void PeriodPattern::print()
     {
-        send("[PP] ");
+        send("[PP] l: ");
+        send(this->_length);
+        send(' ');
         send_array(periods, this->getLength());
         send(" t: ");
         send(this->_tolerance);

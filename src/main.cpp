@@ -8,6 +8,11 @@
 
 #include "util.hpp"
 
+namespace global
+{
+  uint8_t found_signals[100] = {255};
+}
+
 void setup_onboard_led()
 {
   RCC->AHBENR |= RCC_AHBENR_GPIOAEN;   // enable the clock to GPIO
@@ -31,12 +36,21 @@ int main(void)
 
   ic::init_ic();
 
+  memset(global::found_signals, 255, sizeof(global::found_signals));
+
+  static uint32_t found_index = 0;
+
   while (1)
   {
-
-    // ic::process_signals();
-
     conf::handle_usart();
+
+    auto found = ic::process_signals();
+
+    if (found != -1)
+    {
+      global::found_signals[found_index++] = found;
+      toggle_onboard();
+    }
   }
 
   return 0;

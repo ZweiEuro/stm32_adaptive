@@ -12,6 +12,8 @@ namespace ic
     void disable_ic(void);
     void enable_ic(void);
 
+    uint64_t get_last_time_interrupted();
+
 #define PATTERN_MAX_N 8
 
     class PeriodPattern
