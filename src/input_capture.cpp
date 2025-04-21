@@ -4,16 +4,7 @@
 #include "SignalBuffer.hpp"
 #include "main.hpp"
 #include "util.hpp"
-
-static inline void set_bits(uint32_t *registry, uint32_t pattern, uint32_t position = 0)
-{
-    *registry |= (pattern << position);
-}
-
-static inline void clear_bits(uint32_t *registry, uint32_t pattern, uint32_t position = 0)
-{
-    *registry &= ~(pattern << position);
-}
+#include "config.hpp"
 
 namespace ic
 {
@@ -74,11 +65,8 @@ namespace ic
         // enable trigger interrupt
 
         NVIC_SetPriority(TIM3_IRQn, 0x06); // set priority (0x06 is picked arbitrarily)
-        NVIC_EnableIRQ(TIM3_IRQn);
 
         TIM3->CR1 |= TIM_CR1_CEN; // enable the thing
-
-        send("inited IC\n");
 
         /**
          * What does it do:
@@ -92,6 +80,16 @@ namespace ic
          * - changing PA6 logic level does not change anything or cause more or less interrupts, making the thing quasi useless
          *
          */
+    }
+
+    void disable_ic(void)
+    {
+        NVIC_DisableIRQ(TIM3_IRQn);
+    }
+
+    void enable_ic(void)
+    {
+        NVIC_EnableIRQ(TIM3_IRQn);
     }
 
     auto signalBuffer = sb::SignalBuffer(500);
@@ -142,12 +140,6 @@ namespace ic
     }
 #endif
 
-    void bla()
-    {
-        for (int i = 0; i < 8; i++)
-            signalBuffer.push(500);
-    }
-
     int process_signals()
     {
 
@@ -166,13 +158,13 @@ namespace ic
 
         done = true;
 
-        for (int i = 0; i < global::n_patterns; i++)
+        for (int i = 0; i < conf::n_patterns; i++)
         {
 
-            if (global::period_patterns[i]->match_window(window))
+            if (conf::period_patterns[i]->match_window(window))
             {
 
-                signalBuffer.shift_read_head(global::period_patterns[i]->getLength() - 1);
+                signalBuffer.shift_read_head(conf::period_patterns[i]->getLength() - 1);
                 send("found Signal: ");
                 send(i);
                 send(" ");
@@ -190,6 +182,96 @@ namespace ic
         signalBuffer.shift_read_head();
 
         return 0;
+    }
+
+    // CLASS
+
+    PeriodPattern::PeriodPattern(const uint16_t signal_pattern[PATTERN_MAX_N], float tolerance)
+    {
+        _tolerance = tolerance;
+        memcpy(periods, signal_pattern, 8 * sizeof(uint16_t));
+
+        _length = PATTERN_MAX_N;
+        for (int i = 0; i < 8; i++)
+        {
+            if (periods[i] == 0)
+            {
+                _length = i + 1;
+                break;
+            }
+        }
+    }
+
+    bool PeriodPattern::match_window(const uint16_t signal_pattern[PATTERN_MAX_N])
+    {
+
+        if (_length == 0)
+        {
+            return false;
+        }
+
+        for (int index = 0; index < _length; index++)
+        {
+            const volatile auto target_val = periods[index];
+            const volatile auto signal_period = signal_pattern[index];
+
+            if (target_val == 0.0)
+            {
+                // we are done
+                return true;
+            }
+
+            if (signal_period == 0.0)
+            {
+                return false;
+            }
+
+            const uint32_t lower_bound = target_val * (1.0 - _tolerance);
+            const uint32_t upper_bound = target_val * (1.0 + _tolerance);
+
+            const bool within_tolerance = lower_bound <= signal_period &&
+                                          signal_period <= upper_bound;
+
+            if (!within_tolerance)
+            {
+#if IC_DEBUG
+                send("miss: ");
+                send(index);
+                send(" ");
+                send(lower_bound);
+                send(" <= ");
+                send(signal_period);
+                send(" <= ");
+                send(upper_bound);
+                send('\n');
+#endif
+                return false;
+            }
+            else
+            {
+#if IC_DEBUG
+                send("good: ");
+                send(index);
+                send(" ");
+                send(lower_bound);
+                send(" <= ");
+                send(signal_period);
+                send(" <= ");
+                send(upper_bound);
+                send('\n');
+#endif
+            }
+        }
+        return true;
+    }
+
+    void PeriodPattern::print()
+    {
+        send("[PP] ");
+        send_array(periods, this->getLength());
+        send(" t: ");
+        send(this->_tolerance);
+        send("\n");
     }
 }
 
