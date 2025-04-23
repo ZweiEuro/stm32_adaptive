@@ -43,7 +43,7 @@ def after_upload(source, target, env):
         stm32.write(int(p.tolerance * 255).to_bytes(1, 'big'))
     
     # enable capture mode
-    # stm32.write(int(ord('s')).to_bytes(1, 'big'))
+    stm32.write(int(ord('s')).to_bytes(1, 'big'))
     stm32.close()
 
 

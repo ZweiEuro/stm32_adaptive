@@ -101,6 +101,12 @@ void send(const char *v)
     }
 }
 
+void sendln(const char *v)
+{
+    send(v);
+    send('\n');
+}
+
 void send(const float v)
 {
 

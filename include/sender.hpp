@@ -2,5 +2,5 @@
 
 namespace sender
 {
-    void send();
+    void send(const uint8_t pattern_indices[], uint8_t length);
 }

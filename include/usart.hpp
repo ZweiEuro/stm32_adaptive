@@ -17,6 +17,7 @@ bool USART_GetByte(uint8_t &dest, bool blocking = false);
 
 // overloaded senders
 void send(const char v);
+void sendln(const char *v);
 void send(const char *v);
 
 void send(const int v);

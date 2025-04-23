@@ -25,9 +25,11 @@ void setup_pinouts()
   GPIOA->MODER |= GPIO_MODER_MODER0_0;
 }
 
+const auto PIN_PA4_Pos = (1 << 4);
+
 void toggle_onboard()
 {
-  GPIOA->ODR ^= (1 << 4);
+  GPIOA->ODR ^= PIN_PA4_Pos;
 }
 
 // Alternates blue and green LEDs quickly
@@ -46,7 +48,6 @@ int main(void)
 
   static uint32_t found_index = 0;
 
-  sender::send();
   while (1)
   {
 

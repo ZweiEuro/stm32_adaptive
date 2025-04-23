@@ -112,12 +112,14 @@ namespace ic
 
             if (SR & TIM_SR_CC1IF)
             {
+                // calc actual period with overflow offset
                 const auto period = TIM3->CCR1 + (overflow_counter << 16);
                 overflow_counter = 0;
 
                 if (period >= UINT16_MAX || period < 200)
                 {
-                    // skip
+                    // skip, cannot possibly be relevant
+                    // TODO: CHECK if this is actually needed on actual hardware, might be needlessly limiting
                 }
                 else
                 {
@@ -150,26 +152,34 @@ namespace ic
         uint16_t window[8] = {0};
         memset((void *)window, 0, sizeof(window)); // clear the window for every new calc
 
+        // get the current received signals
         if (!signalBuffer.getWindow(window, 8))
         {
             return -1;
         }
 
+        // TODO: remove!
+        // only process after a delay
         if (rcc::getSystick() < last_time_interrupted + 1000)
         {
             return -1;
         }
 
+        send_array(window, 8);
+        send("\n");
+
+        // check ever pattern and check for a hit
         for (int i = 0; i < conf::n_patterns; i++)
         {
             if (conf::period_patterns[i]->match_window(window))
             {
-
+                // shift out the signal we hit
                 signalBuffer.shift_read_head(conf::period_patterns[i]->getLength());
                 return i;
             }
         }
 
+        // shift ahead by 1
         signalBuffer.shift_read_head();
 
         return -1;
@@ -267,36 +277,3 @@ namespace ic
         send("\n");
     }
 }
-
-/*
-// left button
-found Signal: 0 [308, 11424, 311, 1143, 308, 1139, 310, 1145]
-found Signal: 1 [311, 1143, 308, 1139, 310, 1145, 987, 458]
-found Signal: 2 [310, 1145, 987, 458, 304, 1150, 302, 1143]
-found Signal: 1 [304, 1150, 302, 1143, 305, 1142, 308, 1146]
-found Signal: 1 [305, 1142, 308, 1146, 302, 1148, 307, 1145]
-found Signal: 1 [302, 1148, 307, 1145, 303, 1144, 305, 1141]
-found Signal: 1 [303, 1144, 305, 1141, 304, 1153, 304, 1145]
-found Signal: 1 [304, 1153, 304, 1145, 303, 1146, 305, 1144]
-found Signal: 1 [303, 1146, 305, 1144, 303, 1153, 301, 1150]
-found Signal: 1 [303, 1153, 301, 1150, 300, 1145, 987, 463]
-found Signal: 2 [300, 1145, 987, 463, 300, 1155, 987, 463]
-found Signal: 2 [300, 1155, 987, 463, 299, 1152, 982, 464]
-found Signal: 2 [299, 1152, 982, 464, 297, 11455, 295, 1156]
-
-found Signal: 0 [307, 11421, 312, 1143, 309, 1132, 316, 1137]
-found Signal: 1 [312, 1143, 309, 1132, 316, 1137, 992, 454]
-found Signal: 2 [316, 1137, 992, 454, 308, 1146, 307, 1139]
-found Signal: 1 [308, 1146, 307, 1139, 306, 1141, 305, 1139]
-found Signal: 1 [306, 1141, 305, 1139, 307, 1148, 305, 1139]
-found Signal: 1 [307, 1148, 305, 1139, 307, 1144, 302, 1144]
-found Signal: 1 [307, 1144, 302, 1144, 303, 1152, 300, 1138]
-found Signal: 1 [303, 1152, 300, 1138, 307, 1144, 303, 1146]
-found Signal: 1 [307, 1144, 303, 1146, 300, 1152, 300, 1144]
-found Signal: 1 [300, 1152, 300, 1144, 303, 1147, 983, 459]
-found Signal: 2 [303, 1147, 983, 459, 303, 1150, 986, 458]
-found Signal: 2 [303, 1150, 986, 458, 302, 1148, 300, 1144]
-found Signal: 1 [302, 1148, 300, 1144, 303, 11427, 309, 1154]
-
-
- */

@@ -2,28 +2,60 @@
 
 #include "usart.hpp"
 #include "sender.hpp"
+#include "stdlib.h"
+#include "config.hpp"
 namespace sender
 {
+
+    const auto PIN_PA0_Pos = (1 << 0);
+
+    bool _sending = false; // are we currently processing something
+
+    uint8_t *_pattern_indices = nullptr; // indices into conf::period_patterns of what to send
+    uint8_t _indices_array_length = 0;
+
+    uint8_t _current_pattern_indices_index = 0; // indicates the NEXT period to load on interrupt
+
+    uint8_t _current_pattern_period_index = 0;
 
 #ifdef __cplusplus
     extern "C"
     {
 #endif
 
-        const uint16_t arr[] = {500, 800};
-
         void TIM14_IRQHandler(void)
         {
-            static volatile uint8_t index = 0;
-
-            if (TIM14->SR & TIM_SR_UIF)
-            {
-                GPIOA->ODR ^= (1 << 0);
-
-                TIM14->ARR = arr[(index++) % 2];
-            }
-
+            const auto SR = TIM14->SR;
             TIM14->SR = 0;
+
+            if (SR & TIM_SR_UIF)
+            {
+
+                auto current_period = conf::period_patterns[_pattern_indices[_current_pattern_indices_index]];
+
+                if (_current_pattern_period_index >= current_period->getLength())
+                {
+                    _current_pattern_period_index = 0;
+                    _current_pattern_indices_index++;
+
+                    if (_current_pattern_indices_index >= _indices_array_length)
+                    {
+                        // are are DONE
+                        TIM14->CR1 &= ~TIM_CR1_CEN;
+                        _sending = false;
+                        return;
+                    }
+                    else
+                    {
+                        // get the next one
+                        current_period = conf::period_patterns[_pattern_indices[_current_pattern_indices_index]];
+                    }
+                }
+
+                GPIOA->ODR ^= PIN_PA0_Pos;
+                TIM14->ARR = current_period->periods[_current_pattern_period_index];
+                _current_pattern_period_index++;
+            }
         }
 #ifdef __cplusplus
     }
@@ -84,13 +116,45 @@ namespace sender
         NVIC_EnableIRQ(TIM14_IRQn);
     }
 
-    void send(const ic::PeriodPattern &pattern)
+    void send(const uint8_t pattern_indices[], uint8_t length)
     {
+        ic::disable_ic();
+
         static bool _setup = false;
         if (!_setup)
         {
             _setup = true;
             setup();
         }
+
+        // copy over the indices that are to be sent
+        _pattern_indices = (uint8_t *)calloc(sizeof(uint8_t), length);
+        memcpy(_pattern_indices, pattern_indices, sizeof(uint8_t) * length);
+        _indices_array_length = length;
+
+        // make sure we start at 0
+        _current_pattern_indices_index = 0; // load 0 on pos 1 next
+        _current_pattern_period_index = 1;
+
+        // load first value manually
+        TIM14->ARR = conf::period_patterns[_current_pattern_indices_index]->periods[0];
+
+        // wait until done
+        _sending = true;
+
+        GPIOA->ODR |= PIN_PA0_Pos; // turn "off"
+
+        TIM14->CR1 |= TIM_CR1_CEN;
+
+        while (_sending)
+            __asm("nop");
+
+        ::sendln("done");
+
+        free(_pattern_indices);
+        _pattern_indices = nullptr;
+        _indices_array_length = 0;
+
+        ic::enable_ic();
     }
 }

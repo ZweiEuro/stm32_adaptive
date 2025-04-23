@@ -25,7 +25,7 @@ namespace ic
     public:
         uint16_t periods[PATTERN_MAX_N] = {0};
 
-        int getLength()
+        int getLength() const
         {
             return _length;
         }

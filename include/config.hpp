@@ -28,6 +28,7 @@ namespace conf
         C_HALT = 'h',  // halt input capture
         C_PRINT = 'p', // character 'p'
         C_FLUSH = 'f', // print out all the "found" things
+        C_TEST = 't',  // send hard-coded test signal
 
         // END
         M_MAX

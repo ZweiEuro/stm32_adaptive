@@ -5,6 +5,7 @@
 
 #include "stdlib.h"
 #include "main.hpp"
+#include "sender.hpp"
 
 namespace conf
 {
@@ -74,9 +75,11 @@ namespace conf
 
         case C_START:
             ic::enable_ic();
+            sendln("started");
             break;
         case C_HALT:
             ic::disable_ic();
+            sendln("halted");
             break;
         case C_FLUSH:
 
@@ -96,6 +99,27 @@ namespace conf
             }
 
             send("\n");
+        }
+        break;
+
+        case C_TEST:
+        {
+            static bool toggle = false;
+
+            sendln("sending");
+
+            if (toggle)
+            {
+                const uint8_t arr[] = {0, 1, 2, 0};
+                sender::send(arr, sizeof(arr));
+            }
+            else
+            {
+                const uint8_t arr[] = {0, 1, 2, 0};
+                sender::send(arr, sizeof(arr));
+            }
+
+            toggle != toggle;
         }
         break;
 
