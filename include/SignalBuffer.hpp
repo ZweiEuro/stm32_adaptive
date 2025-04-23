@@ -4,6 +4,7 @@
 #include <inttypes.h>
 #include <malloc.h>
 #include "usart.hpp"
+#include <deque>
 
 namespace sb
 {
@@ -15,38 +16,25 @@ namespace sb
     {
 
     private:
-        uint16_t _buffer[500] = {0};
-        uint16_t _write_head = 0;
-        int _size;
-
-        int _read_head = 0;
+        std::deque<uint16_t> _queue;
 
     public:
-        SignalBuffer(int size)
+        SignalBuffer()
         {
-            _size = size;
-            memset(_buffer, 0, sizeof(_buffer));
         }
 
         ~SignalBuffer()
         {
-            free(_buffer);
         }
 
-        bool push(uint16_t val)
+        void push(uint16_t val)
         {
-
-            if (((_write_head + 1) % _size) == _read_head)
+            if (_queue.size() >= 500)
             {
-                send("[ERR] Write head hit read head\n");
-                // the write head has caught up with the read head
-                // this should never really happen
-                return false;
+                return;
             }
 
-            _buffer[_write_head] = val;
-            _write_head = (_write_head + 1) % _size;
-            return true;
+            _queue.push_back(val);
         }
 
         /**
@@ -54,16 +42,15 @@ namespace sb
          */
         bool getWindow(uint16_t window[], int window_length)
         {
+            if (_queue.size() < window_length)
+            {
+                return false;
+            }
 
             for (int i = 0; i < window_length; i++)
+
             {
-                if (_buffer[(_read_head + i) % _size] == 0 ||
-                    ((_read_head + i) % _size == _write_head) // hit the write head (this means we are "done")
-                )
-                {
-                    return false;
-                }
-                window[i] = _buffer[(_read_head + i) % _size];
+                window[i] = _queue.at(i);
             }
 
             return true;
@@ -73,9 +60,8 @@ namespace sb
         {
             for (int i = 0; i < amount; i++)
             {
-                _buffer[(_read_head + i) % _size] = 0;
+                _queue.pop_front();
             }
-            _read_head = (_read_head + amount) % _size;
         }
 
         void print()
@@ -83,26 +69,14 @@ namespace sb
 
             send("[");
 
-            for (int i = 0; i < _size; i++)
+            for (auto v : _queue)
             {
-                if (_buffer[i] == 0)
-                {
-                    break;
-                }
 
-                if (i == _write_head)
-                {
-                    send('^');
-                }
-
-                send(_buffer[i]);
-                if (i < (_size - 1))
-                {
-                    send(", ");
-                }
+                send(v);
+                send(", ");
             }
 
-            send("]");
+            send("]\n");
         }
     };
 }

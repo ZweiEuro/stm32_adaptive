@@ -92,7 +92,7 @@ namespace ic
         NVIC_EnableIRQ(TIM3_IRQn);
     }
 
-    auto signalBuffer = sb::SignalBuffer(500);
+    auto signalBuffer = sb::SignalBuffer();
 
 #ifdef __cplusplus
     extern "C"
@@ -123,10 +123,8 @@ namespace ic
                 }
                 else
                 {
-                    if (signalBuffer.push(period))
-                    {
-                        last_time_interrupted = rcc::getSystick();
-                    }
+                    signalBuffer.push(period);
+                    last_time_interrupted = rcc::getSystick();
                 }
             }
 
@@ -165,8 +163,8 @@ namespace ic
             return -1;
         }
 
-        send_array(window, 8);
-        send("\n");
+        // send_array(window, 8);
+        // send("\n");
 
         // check ever pattern and check for a hit
         for (int i = 0; i < conf::n_patterns; i++)

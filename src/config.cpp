@@ -110,12 +110,42 @@ namespace conf
 
             if (toggle)
             {
-                const uint8_t arr[] = {0, 1, 2, 0};
+                const uint8_t arr[] = {
+                    0,
+                    1,
+                    2,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    2,
+                    2,
+                    2,
+                    0,
+                };
                 sender::send(arr, sizeof(arr));
             }
             else
             {
-                const uint8_t arr[] = {0, 1, 2, 0};
+                const uint8_t arr[] = {
+                    0,
+                    1,
+                    2,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    2,
+                    2,
+                    1,
+                    0,
+                };
                 sender::send(arr, sizeof(arr));
             }
 
