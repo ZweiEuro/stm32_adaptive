@@ -4,9 +4,15 @@
 ## Checklist:
 
 - [x] Input capturing on pin PA6
-- [ ] Systick measuring ms or higher resolution
-- [ ] ringbuffer and window matching
-- [ ] pattern matching
+- [x] Systick measuring ms or higher resolution
+- [x] ringbuffer and window matching
+- [x] pattern matching
+- [x] Pattern set and upload via uart
+- [ ] Universal index sending
+- [ ] Button states
+  - [ ] Hold 5 sec -> erase
+  - [ ] push -> save address mode ?
+- [ ] Flash read and write on last page
 
 
 ## RTC

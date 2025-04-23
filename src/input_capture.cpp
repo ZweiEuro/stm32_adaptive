@@ -102,7 +102,6 @@ namespace ic
         // only start processing interrupts after a second has passed
         uint64_t last_time_interrupted = 0;
 
-        //*************************************************************************************
         void TIM3_IRQHandler(void)
         {
 
@@ -134,7 +133,6 @@ namespace ic
                 overflow_counter++;
             }
         }
-        //*************************************************************************************
 
 // Declarations of this file
 #ifdef __cplusplus

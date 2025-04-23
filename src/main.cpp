@@ -5,6 +5,7 @@
 #include "SignalBuffer.hpp"
 #include "input_capture.hpp"
 #include "config.hpp"
+#include "sender.hpp"
 
 #include "util.hpp"
 
@@ -13,10 +14,15 @@ namespace global
   uint8_t found_signals[100] = {255};
 }
 
-void setup_onboard_led()
+void setup_pinouts()
 {
-  RCC->AHBENR |= RCC_AHBENR_GPIOAEN;   // enable the clock to GPIO
+  RCC->AHBENR |= RCC_AHBENR_GPIOAEN; // enable the clock to GPIO
+
+  // PA4
   GPIOA->MODER |= GPIO_MODER_MODER4_0; // set pins to be general purpose output
+
+  // PA0
+  GPIOA->MODER |= GPIO_MODER_MODER0_0;
 }
 
 void toggle_onboard()
@@ -27,7 +33,7 @@ void toggle_onboard()
 // Alternates blue and green LEDs quickly
 int main(void)
 {
-  setup_onboard_led();
+  setup_pinouts();
 
   rcc::SYSTICK_init();
   rcc::RCC_init();
@@ -40,8 +46,10 @@ int main(void)
 
   static uint32_t found_index = 0;
 
+  sender::send();
   while (1)
   {
+
     conf::handle_usart();
 
     auto found = ic::process_signals();
