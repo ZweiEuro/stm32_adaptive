@@ -134,7 +134,6 @@ namespace ic
             }
         }
 
-// Declarations of this file
 #ifdef __cplusplus
     }
 #endif

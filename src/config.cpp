@@ -6,6 +6,7 @@
 #include "stdlib.h"
 #include "main.hpp"
 #include "sender.hpp"
+#include "flash.hpp"
 
 namespace conf
 {
@@ -85,6 +86,10 @@ namespace conf
 
             send_array(global::found_signals, sizeof(global::found_signals));
             send('\n');
+            break;
+
+        case C_FLASH_TEST:
+            flash::test();
             break;
 
         case C_PRINT:

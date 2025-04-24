@@ -103,7 +103,10 @@ void send(const char *v)
 
 void sendln(const char *v)
 {
-    send(v);
+    if (v != nullptr)
+    {
+        send(v);
+    }
     send('\n');
 }
 
@@ -141,6 +144,11 @@ void send(const uint32_t v)
     {
         send(buffer);
     }
+}
+
+void send(const uint8_t v)
+{
+    send((uint32_t)v);
 }
 
 void send_bin(uint32_t v)
