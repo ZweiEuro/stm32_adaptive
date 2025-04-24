@@ -11,16 +11,11 @@ namespace flash
     {
 #endif
         // comes from the linker and cannot be mangled
-        extern int __SEC_CONFIG_DATA_START;
+        extern uint8_t __SEC_CONFIG_DATA_START[1024];
 
 #ifdef __cplusplus
     }
 #endif
-
-    uint8_t *SEC_CONFIG_DATA_START = static_cast<uint8_t *>((void *)&__SEC_CONFIG_DATA_START);
-
-    const auto max_flash_size = 0x4000UL;
-    const auto page_size = 0x08007FFF - 0x08007C00;
 
     void erase_page()
     {
@@ -51,10 +46,10 @@ namespace flash
             /* (5) Check the EOP flag in the FLASH_SR register */
             /* (6) Clear EOP flag by software by writing EOP at 1 */
             /* (7) Reset the PER Bit to disable the page erase */
-            FLASH->CR |= FLASH_CR_PER;                   /* (1) */
-            FLASH->AR = (uint32_t)SEC_CONFIG_DATA_START; /* (2) */
-            FLASH->CR |= FLASH_CR_STRT;                  /* (3) */
-            while ((FLASH->SR & FLASH_SR_BSY) != 0)      /* (4) */
+            FLASH->CR |= FLASH_CR_PER;                     /* (1) */
+            FLASH->AR = (uint32_t)__SEC_CONFIG_DATA_START; /* (2) */
+            FLASH->CR |= FLASH_CR_STRT;                    /* (3) */
+            while ((FLASH->SR & FLASH_SR_BSY) != 0)        /* (4) */
             {
 
                 /* For robust implementation, add here time-out management */
@@ -68,8 +63,7 @@ namespace flash
             {
                 /* Manage the error cases */
                 sendln("[ERR] could not erase flash?");
-                send(FLASH->SR);
-                sendln();
+                sendln(FLASH->SR);
             }
             FLASH->CR &= ~FLASH_CR_PER; /* (7) */
         }
@@ -77,20 +71,48 @@ namespace flash
         sendln("flash erased");
     }
 
+    void program_flash_start()
+    {
+
+        /* (1) Set the PG bit in the FLASH_CR register to enable programming */
+        /* (2) Perform the data write (half-word) at the desired address */
+        /* (3) Wait until the BSY bit is reset in the FLASH_SR register */
+        /* (4) Check the EOP flag in the FLASH_SR register */
+        /* (5) clear it by software by writing it at 1 */
+        /* (6) Reset the PG Bit to disable programming */
+        FLASH->CR |= FLASH_CR_PG;                                  /* (1) */
+        *(__IO uint16_t *)(__SEC_CONFIG_DATA_START) = (uint16_t)2; /* (2) */
+        while ((FLASH->SR & FLASH_SR_BSY) != 0)                    /* (3) */
+        {
+            /* For robust implementation, add here time-out management */
+            ;
+        }
+
+        if ((FLASH->SR & FLASH_SR_EOP) != 0) /* (4) */
+        {
+            FLASH->SR = FLASH_SR_EOP; /* (5) */
+        }
+        else
+        {
+            /* Manage the error cases */
+        }
+        FLASH->CR &= ~FLASH_CR_PG; /* (6) */
+    }
+
     void test()
     {
         sendln("flash test");
-        send((uint32_t)SEC_CONFIG_DATA_START);
-        sendln();
 
         {
-            send_array((uint8_t *)SEC_CONFIG_DATA_START, 10);
+            send_arrayln((uint8_t *)__SEC_CONFIG_DATA_START, 10);
         }
 
         erase_page();
 
         {
-            send_array((uint8_t *)SEC_CONFIG_DATA_START, 10);
+            send_arrayln((uint8_t *)__SEC_CONFIG_DATA_START, 10);
         }
+
+        program_flash_start();
     }
 }

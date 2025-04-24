@@ -49,7 +49,7 @@ MEMORY
 {
   RAM         (xrw) : ORIGIN = 0x20000000     , LENGTH = 4K
   FLASH       (rx)  : ORIGIN = 0x8000000      , LENGTH = 16K - 1k /* reduced from 16kb so we have last page free*/
-  CONFIG_DATA (rw)  : ORIGIN = 0x8000000 + 15k, LENGTH = 1k
+  CONFIG_DATA (r)   : ORIGIN = 0x8000000 + 15k, LENGTH = 1k /* Read only since the flash should only write through it*/
 }
 
 /* Sections */

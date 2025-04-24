@@ -101,15 +101,6 @@ void send(const char *v)
     }
 }
 
-void sendln(const char *v)
-{
-    if (v != nullptr)
-    {
-        send(v);
-    }
-    send('\n');
-}
-
 void send(const float v)
 {
 

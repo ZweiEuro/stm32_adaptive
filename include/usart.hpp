@@ -17,7 +17,6 @@ bool USART_GetByte(uint8_t &dest, bool blocking = false);
 
 // overloaded senders
 void send(const char v);
-void sendln(const char *v = nullptr);
 void send(const char *v);
 
 void send(const int v);
@@ -42,6 +41,33 @@ void send_array(T *array, int size)
     }
 
     send("]");
+}
+
+template <typename T>
+void sendln(T v)
+{
+
+    send(v);
+    send('\n');
+}
+
+template <typename T>
+void send_arrayln(T *array, int size)
+{
+
+    send("[");
+
+    for (int i = 0; i < size; i++)
+    {
+
+        send(array[i]);
+        if (i < (size - 1))
+        {
+            send(", ");
+        }
+    }
+
+    sendln("]");
 }
 
 void send_bin(uint32_t v);
