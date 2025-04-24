@@ -10,13 +10,14 @@ namespace flash
     extern "C"
     {
 #endif
-        extern int __SEC_USER_DATA_START;
+        // comes from the linker and cannot be mangled
+        extern int __SEC_CONFIG_DATA_START;
 
 #ifdef __cplusplus
     }
 #endif
 
-    uint8_t *SEC_USER_DATA_START = static_cast<uint8_t *>((void *)&__SEC_USER_DATA_START);
+    uint8_t *SEC_CONFIG_DATA_START = static_cast<uint8_t *>((void *)&__SEC_CONFIG_DATA_START);
 
     const auto max_flash_size = 0x4000UL;
     const auto page_size = 0x08007FFF - 0x08007C00;
@@ -51,7 +52,7 @@ namespace flash
             /* (6) Clear EOP flag by software by writing EOP at 1 */
             /* (7) Reset the PER Bit to disable the page erase */
             FLASH->CR |= FLASH_CR_PER;                   /* (1) */
-            FLASH->AR = (uint32_t)__SEC_USER_DATA_START; /* (2) */
+            FLASH->AR = (uint32_t)SEC_CONFIG_DATA_START; /* (2) */
             FLASH->CR |= FLASH_CR_STRT;                  /* (3) */
             while ((FLASH->SR & FLASH_SR_BSY) != 0)      /* (4) */
             {
@@ -79,18 +80,18 @@ namespace flash
     void test()
     {
         sendln("flash test");
-        send((uint32_t)SEC_USER_DATA_START);
+        send((uint32_t)SEC_CONFIG_DATA_START);
         sendln();
 
         {
-            send_array((uint8_t *)SEC_USER_DATA_START, 10);
+            send_array((uint8_t *)SEC_CONFIG_DATA_START, 10);
         }
 
         // erase_page();
-        SEC_USER_DATA_START[0] += 1;
+        SEC_CONFIG_DATA_START[0] += 1;
 
         {
-            send_array((uint8_t *)SEC_USER_DATA_START, 10);
+            send_array((uint8_t *)SEC_CONFIG_DATA_START, 10);
         }
     }
 }

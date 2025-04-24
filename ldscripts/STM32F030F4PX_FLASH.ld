@@ -47,9 +47,9 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 4K
-  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 16K - 1k /* reduced from 16kb so we have last page free*/
-  DATA (rw) : ORIGIN = 0x8000000 + 15k, LENGTH = 1k
+  RAM         (xrw) : ORIGIN = 0x20000000     , LENGTH = 4K
+  FLASH       (rx)  : ORIGIN = 0x8000000      , LENGTH = 16K - 1k /* reduced from 16kb so we have last page free*/
+  CONFIG_DATA (rw)  : ORIGIN = 0x8000000 + 15k, LENGTH = 1k
 }
 
 /* Sections */
@@ -187,11 +187,15 @@ SECTIONS
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
 
-  .user_data :
+/*
+From:
+https://stackoverflow.com/questions/28503808/allocating-memory-in-flash-for-user-data-stm32f4-hal?rq=4 
+https://stackoverflow.com/questions/65846716/how-to-get-the-location-of-a-section-in-c-code
+*/
+  .CONFIG_DATA :
   {
     . = ALIGN(4);
-    __SEC_USER_DATA_START = ABSOLUTE(.);
-      *(.user_data)
+    __SEC_CONFIG_DATA_START = ABSOLUTE(.);
     . = ALIGN(4);
-  } > DATA
+  } > CONFIG_DATA
 }
