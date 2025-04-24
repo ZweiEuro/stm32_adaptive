@@ -37,8 +37,8 @@ namespace flash
             }
             if ((FLASH->CR & FLASH_CR_LOCK) != 0) /* (2) */
             {
-                // FLASH->KEYR = FLASH_FKEY1; /* (3) */
-                // FLASH->KEYR = FLASH_FKEY2;
+                FLASH->KEYR = FLASH_KEY1; /* (3) */
+                FLASH->KEYR = FLASH_KEY2;
             }
         }
 
@@ -87,8 +87,7 @@ namespace flash
             send_array((uint8_t *)SEC_CONFIG_DATA_START, 10);
         }
 
-        // erase_page();
-        SEC_CONFIG_DATA_START[0] += 1;
+        erase_page();
 
         {
             send_array((uint8_t *)SEC_CONFIG_DATA_START, 10);
