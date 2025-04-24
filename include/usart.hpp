@@ -2,6 +2,7 @@
 
 // ---------------------------------------------------------------------------
 #include "stm32f0xx.h"
+#include "stdint.h"
 // ---------------------------------------------------------------------------
 #define USART_BUFFER_SIZE 64
 
@@ -23,6 +24,8 @@ void send(const int v);
 void send(const uint32_t v);
 void send(const uint8_t v);
 void send(const float v);
+
+void send_hex(uint32_t v);
 
 template <typename T>
 void send_array(T *array, int size)
@@ -71,5 +74,3 @@ void send_arrayln(T *array, int size)
 }
 
 void send_bin(uint32_t v);
-
-// ---------------------------------------------------------------------------

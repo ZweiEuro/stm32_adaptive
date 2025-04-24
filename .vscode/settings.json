@@ -3,6 +3,7 @@
         "*.mdx": "mdx",
         "stm32f0xx.h": "c",
         "rcc.h": "c",
-        "usart.h": "c"
+        "usart.h": "c",
+        "usart.hpp": "c"
     }
 }

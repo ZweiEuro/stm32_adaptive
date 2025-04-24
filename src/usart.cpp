@@ -137,6 +137,21 @@ void send(const uint32_t v)
     }
 }
 
+void send_hex(uint32_t v)
+{
+    char buffer[20] = {0};
+    int ret = sprintf(buffer, "0x%08lX", v);
+
+    if (0 >= ret || ret > (int)sizeof(buffer))
+    {
+        send("[UART ERR] Could not send uint32_t value!\n");
+    }
+    else
+    {
+        send(buffer);
+    }
+}
+
 void send(const uint8_t v)
 {
     send((uint32_t)v);
