@@ -17,25 +17,54 @@ namespace flash
     }
 #endif
 
-    void erase_page()
+#define WAIT_FOR_FLASH_BSY                  \
+    while ((FLASH->SR & FLASH_SR_BSY) != 0) \
+    {                                       \
+        ;                                   \
+    };
+
+    bool flash_locked = true;
+
+    void flash_unlock()
     {
 
-        { // unlock the flash
-
-            /* (1) Wait till no operation is on going */
-            /* (2) Check that the Flash is unlocked */
-            /* (3) Perform unlock sequence */
-            while ((FLASH->SR & FLASH_SR_BSY) != 0) /* (1) */
-            {
-                ;
-                /* For robust implementation, add here time-out management */
-            }
-            if ((FLASH->CR & FLASH_CR_LOCK) != 0) /* (2) */
-            {
-                FLASH->KEYR = FLASH_KEY1; /* (3) */
-                FLASH->KEYR = FLASH_KEY2;
-            }
+        if (flash_locked == false)
+        {
+            // already unlocked
+            return;
         }
+
+        // unlock the flash
+
+        /* (1) Wait till no operation is on going */
+        /* (2) Check that the Flash is unlocked */
+        /* (3) Perform unlock sequence */
+        while ((FLASH->SR & FLASH_SR_BSY) != 0) /* (1) */
+        {
+            ;
+            /* For robust implementation, add here time-out management */
+        }
+        if ((FLASH->CR & FLASH_CR_LOCK) != 0) /* (2) */
+        {
+            FLASH->KEYR = FLASH_KEY1; /* (3) */
+            FLASH->KEYR = FLASH_KEY2;
+        }
+    }
+
+    void flash_lock()
+    {
+        if (flash_locked == true)
+        {
+            // already locked
+            return;
+        }
+
+        FLASH->CR |= FLASH_CR_LOCK;
+    }
+
+    void erase_page()
+    {
+        flash_unlock();
 
         { // erase the flash
 
@@ -80,9 +109,9 @@ namespace flash
         /* (4) Check the EOP flag in the FLASH_SR register */
         /* (5) clear it by software by writing it at 1 */
         /* (6) Reset the PG Bit to disable programming */
-        FLASH->CR |= FLASH_CR_PG;                                  /* (1) */
-        *(__IO uint16_t *)(__SEC_CONFIG_DATA_START) = (uint16_t)2; /* (2) */
-        while ((FLASH->SR & FLASH_SR_BSY) != 0)                    /* (3) */
+        FLASH->CR |= FLASH_CR_PG;                                       /* (1) */
+        *(__IO uint16_t *)(__SEC_CONFIG_DATA_START) = (uint16_t)0xFF00; /* (2) */
+        while ((FLASH->SR & FLASH_SR_BSY) != 0)                         /* (3) */
         {
             /* For robust implementation, add here time-out management */
             ;
@@ -95,24 +124,31 @@ namespace flash
         else
         {
             /* Manage the error cases */
+            sendln("[ERR] could not write to flash");
         }
         FLASH->CR &= ~FLASH_CR_PG; /* (6) */
     }
 
     void test()
     {
-        sendln("flash test");
+        sendln("flash test start");
 
         {
             send_arrayln((uint8_t *)__SEC_CONFIG_DATA_START, 10);
         }
 
-        erase_page();
+        // erase_page();
 
         {
             send_arrayln((uint8_t *)__SEC_CONFIG_DATA_START, 10);
         }
 
         program_flash_start();
+
+        {
+            send_arrayln((uint8_t *)__SEC_CONFIG_DATA_START, 10);
+        }
+
+        sendln("flash test end");
     }
 }
