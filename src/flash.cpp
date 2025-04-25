@@ -92,6 +92,8 @@ namespace flash
 
             WAIT_FOR_FLASH_N_BSY; /* (4) */
 
+            CLEAR_BIT(FLASH->CR, FLASH_CR_STRT);
+
             if ((FLASH->SR & FLASH_SR_EOP) != 0) /* (5) */
             {
                 FLASH->SR = FLASH_SR_EOP; /* (6)*/
@@ -117,10 +119,12 @@ namespace flash
         /* (5) clear it by software by writing it at 1 */
         /* (6) Reset the PG Bit to disable programming */
         FLASH->CR |= FLASH_CR_PG; /* (1) */
-        WAIT_FOR_FLASH_N_BSY;     /* (3) */
 
-        *(__IO uint16_t *)(__SEC_CONFIG_DATA_START) = (uint16_t)1; /* (2) */
-        WAIT_FOR_FLASH_N_BSY;                                      /* (3) */
+        PRINT_REG(FLASH->CR);
+        PRINT_REG(FLASH->SR);
+
+        *(__IO uint16_t *)(__SEC_CONFIG_DATA_START) = 0; /* (2) */
+        WAIT_FOR_FLASH_N_BSY;                            /* (3) */
 
         if ((FLASH->SR & FLASH_SR_EOP) != 0) /* (4) */
         {
@@ -137,7 +141,7 @@ namespace flash
     void test()
     {
         printf("flash test start\n");
-        printf("config data at %p\n", (void *)__SEC_CONFIG_DATA_START);
+        PRINT_REG(FLASH->CR);
         flash_unlock();
 
         {
@@ -148,7 +152,6 @@ namespace flash
         {
             prinf_arrln("%ld", (uint8_t *)__SEC_CONFIG_DATA_START, 10);
         }
-
         program_flash_start();
 
         {

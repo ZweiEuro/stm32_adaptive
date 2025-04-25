@@ -44,14 +44,19 @@ int main(void)
 
   USART_Init(9600);
 
-  ic::init_ic();
-
-
   memset(global::found_signals, 255, sizeof(global::found_signals));
 
   static uint32_t found_index = 0;
   printf("hello world!\n");
   flash::test();
+
+  while (1)
+  {
+    ;
+  }
+
+  ic::init_ic();
+
   while (1)
   {
 
