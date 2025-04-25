@@ -7,6 +7,7 @@
 #include "main.hpp"
 #include "sender.hpp"
 #include "flash.hpp"
+#include "sys/printf.hpp"
 
 namespace conf
 {
@@ -76,11 +77,11 @@ namespace conf
 
         case C_START:
             ic::enable_ic();
-            sendln("started");
+            printf("started");
             break;
         case C_HALT:
             ic::disable_ic();
-            sendln("halted");
+            printf("halted");
             break;
         case C_FLUSH:
 
@@ -131,7 +132,7 @@ namespace conf
                     2,
                     0,
                 };
-                sender::send(arr, sizeof(arr));
+                sender::send_434(arr, sizeof(arr));
             }
             else
             {
@@ -151,7 +152,7 @@ namespace conf
                     1,
                     0,
                 };
-                sender::send(arr, sizeof(arr));
+                sender::send_434(arr, sizeof(arr));
             }
 
             toggle != toggle;

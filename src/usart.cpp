@@ -1,5 +1,4 @@
 #include "usart.hpp"
-#include <stdio.h>
 #include "util.hpp"
 
 #include <cstring>
@@ -78,107 +77,24 @@ bool USART_GetByte(uint8_t &dest, bool blocking)
     return true;
 }
 
-void send(const char c)
-{
-
-    /* Check USART if enabled */
-    if ((USART1->CR1 & USART_CR1_UE))
-    {
-        /* Wait to be ready, buffer empty */
-        while (!(USART1->ISR & USART_ISR_TC))
-            ;
-        /* Send data */
-        USART1->TDR = (uint16_t)(c);
-    }
-}
-
-void send(const char *v)
-{
-    while ((*v) != '\0')
-    {
-        send(*v);
-        v++;
-    }
-}
-
-void send(const float v)
-{
-
-    send((int)(v * 100));
-}
-
-void send(const int v)
-{
-    char buffer[20] = {0};
-    int ret = sprintf(buffer, "%d", v);
-
-    if (0 >= ret || ret > (int)sizeof(buffer))
-    {
-        send("[UART ERR] Could not send int value!\n");
-    }
-    else
-    {
-        send(buffer);
-    }
-}
-
-void send(const uint32_t v)
-{
-    char buffer[20] = {0};
-    int ret = sprintf(buffer, "%lu", v);
-
-    if (0 >= ret || ret > (int)sizeof(buffer))
-    {
-        send("[UART ERR] Could not send uint32_t value!\n");
-    }
-    else
-    {
-        send(buffer);
-    }
-}
-
-void send_hex(uint32_t v)
-{
-    char buffer[20] = {0};
-    int ret = sprintf(buffer, "0x%08lX", v);
-
-    if (0 >= ret || ret > (int)sizeof(buffer))
-    {
-        send("[UART ERR] Could not send uint32_t value!\n");
-    }
-    else
-    {
-        send(buffer);
-    }
-}
-
-void send(const uint8_t v)
-{
-    send((uint32_t)v);
-}
-
-void send_bin(uint32_t v)
-{
-
-    send("0b");
-
-    for (int i = 0; i < 32; i++)
-    {
-        if (v & (1 << (31 - i))) // we walk in reverse
-        {
-            send("1 ");
-        }
-        else
-        {
-            send("0 ");
-        }
-    }
-}
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+    void _putchar(const char c)
+    {
+
+        /* Check USART if enabled */
+        if ((USART1->CR1 & USART_CR1_UE))
+        {
+            /* Wait to be ready, buffer empty */
+            while (!(USART1->ISR & USART_ISR_TC))
+                ;
+            /* Send data */
+            USART1->TDR = (uint16_t)(c);
+        }
+    }
 
     void USART1_IRQHandler(void)
     {

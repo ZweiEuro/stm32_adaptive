@@ -44,12 +44,14 @@ _estack = ORIGIN(RAM) + LENGTH(RAM); /* end of "RAM" Ram type memory */
 _Min_Heap_Size = 0x200; /* required amount of heap */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
+_config_data_size = 1k;
+
 /* Memories definition */
 MEMORY
 {
   RAM         (xrw) : ORIGIN = 0x20000000     , LENGTH = 4K
-  FLASH       (rx)  : ORIGIN = 0x8000000      , LENGTH = 16K - 1k /* reduced from 16kb so we have last page free*/
-  CONFIG_DATA (r)   : ORIGIN = 0x8000000 + 15k, LENGTH = 1k /* Read only since the flash should only write through it*/
+  FLASH       (rx)  : ORIGIN = 0x8000000      , LENGTH = 16K - _config_data_size /* reduced from 16kb so we have last page free*/
+  CONFIG_DATA (r)   : ORIGIN = 0x8000000 + (15k - _config_data_size), LENGTH = _config_data_size /* Read only since the flash should only write through it*/
 }
 
 /* Sections */

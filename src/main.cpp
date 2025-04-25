@@ -7,6 +7,7 @@
 #include "config.hpp"
 #include "sender.hpp"
 
+#include "sys/printf.hpp"
 #include "util.hpp"
 
 namespace global
@@ -47,6 +48,7 @@ int main(void)
   memset(global::found_signals, 255, sizeof(global::found_signals));
 
   static uint32_t found_index = 0;
+  printf("hello world!\n");
 
   while (1)
   {
