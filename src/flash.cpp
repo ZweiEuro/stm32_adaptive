@@ -2,6 +2,7 @@
 #include "stm32f030x6.h"
 
 #include "usart.hpp"
+#include "sys/printf.hpp"
 
 namespace flash
 {
@@ -131,24 +132,24 @@ namespace flash
 
     void test()
     {
-        sendln("flash test start");
+        printf("flash test start");
 
         {
-            send_arrayln((uint8_t *)__SEC_CONFIG_DATA_START, 10);
+            prinf_arrln("%ld", (uint8_t *)__SEC_CONFIG_DATA_START, 10);
         }
 
         // erase_page();
 
         {
-            send_arrayln((uint8_t *)__SEC_CONFIG_DATA_START, 10);
+            prinf_arrln("%ld", (uint8_t *)__SEC_CONFIG_DATA_START, 10);
         }
 
         program_flash_start();
 
         {
-            send_arrayln((uint8_t *)__SEC_CONFIG_DATA_START, 10);
+            prinf_arrln("%ld", (uint8_t *)__SEC_CONFIG_DATA_START, 10);
         }
 
-        sendln("flash test end");
+        printf("flash test end");
     }
 }

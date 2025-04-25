@@ -59,6 +59,26 @@ extern "C"
 #define printf printf_
     int printf_(const char *format, ...);
 
+#define printf_arr(fmt, arr, n)     \
+    do                              \
+    {                               \
+        printf("[");                \
+        for (int i = 0; i < n; i++) \
+        {                           \
+                                    \
+            printf(fmt, arr[i]);    \
+            printf(", ");           \
+        }                           \
+        printf("]");                \
+    } while (false);
+
+#define prinf_arrln(fmt, arr, n) \
+    do                           \
+    {                            \
+        printf_arr(fmt, arr, n); \
+        printf("\n");            \
+    } while (false);
+
 /**
  * Tiny sprintf implementation
  * Due to security reasons (buffer overflow) YOU SHOULD CONSIDER USING (V)SNPRINTF INSTEAD!
