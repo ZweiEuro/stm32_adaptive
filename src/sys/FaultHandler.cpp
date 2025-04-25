@@ -90,15 +90,17 @@ extern "C"
         printf("PC :        0x%08lX\n", pc);
         printf("PSR:        0x%08lX\n", psr);
 
-        /*
-            uint32_t hfsr = SCB->HFSR;
-            uint32_t cfsr = SCB->CFSR;
-            uint32_t mmar = SCB->MMFAR;
-            uint32_t bfar = SCB->BFAR;
-            uint32_t afsr = SCB->AFSR;
-             */
+        printf("\n Flash:\n");
+        PRINT_REG(FLASH->SR);
+        PRINT_REG(FLASH->CR);
 
         /*
+        uint32_t hfsr = SCB->HFSR;
+        uint32_t cfsr = SCB->CFSR;
+        uint32_t mmar = SCB->MMFAR;
+        uint32_t bfar = SCB->BFAR;
+        uint32_t afsr = SCB->AFSR;
+
             printf("\nFault status:\n");
             printf("HFSR:       0x%08lX\n", hfsr);
             printf("CFSR:       0x%08lX\n", cfsr);

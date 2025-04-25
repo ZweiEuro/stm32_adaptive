@@ -50,8 +50,8 @@ _config_data_size = 1k;
 MEMORY
 {
   RAM         (xrw) : ORIGIN = 0x20000000     , LENGTH = 4K
-  FLASH       (rx)  : ORIGIN = 0x8000000      , LENGTH = 16K - _config_data_size /* reduced from 16kb so we have last page free*/
-  CONFIG_DATA (r)   : ORIGIN = 0x8000000 + (15k - _config_data_size), LENGTH = _config_data_size /* Read only since the flash should only write through it*/
+  FLASH       (rx)  : ORIGIN = 0x8000000      , LENGTH = (16K - _config_data_size) /* reduced from 16kb so we have last page free*/
+  CONFIG_DATA (r)   : ORIGIN = 0x8000000 + (16k - _config_data_size), LENGTH = _config_data_size /* Read only since the flash should only write through it*/
 }
 
 /* Sections */

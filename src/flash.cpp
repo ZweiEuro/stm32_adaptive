@@ -18,11 +18,11 @@ namespace flash
     }
 #endif
 
-#define WAIT_FOR_FLASH_BSY                  \
-    while ((FLASH->SR & FLASH_SR_BSY) != 0) \
-    {                                       \
-        ;                                   \
-    };
+#define WAIT_FOR_FLASH_N_BSY                  \
+    while (READ_BIT(FLASH->SR, FLASH_SR_BSY)) \
+    {                                         \
+        ;                                     \
+    }
 
     bool flash_locked = true;
 
@@ -31,6 +31,7 @@ namespace flash
 
         if (flash_locked == false)
         {
+            printf("flash already unlocked\n");
             // already unlocked
             return;
         }
@@ -40,32 +41,41 @@ namespace flash
         /* (1) Wait till no operation is on going */
         /* (2) Check that the Flash is unlocked */
         /* (3) Perform unlock sequence */
-        while ((FLASH->SR & FLASH_SR_BSY) != 0) /* (1) */
-        {
-            ;
-            /* For robust implementation, add here time-out management */
-        }
+        WAIT_FOR_FLASH_N_BSY; /* (1) */
+
         if ((FLASH->CR & FLASH_CR_LOCK) != 0) /* (2) */
         {
             FLASH->KEYR = FLASH_KEY1; /* (3) */
             FLASH->KEYR = FLASH_KEY2;
         }
+
+        if (READ_BIT(FLASH->CR, FLASH_CR_LOCK) != 0)
+        {
+            printf("[ERR] flash unlock error\n");
+        }
+
+        flash_locked = false;
+
+        PRINT_REG(FLASH->SR);
+
+        printf("unlocked flash\n");
     }
 
     void flash_lock()
     {
         if (flash_locked == true)
         {
+            printf("flash already locked\n");
             // already locked
             return;
         }
-
         FLASH->CR |= FLASH_CR_LOCK;
+
+        printf("locking flash\n");
     }
 
     void erase_page()
     {
-        flash_unlock();
 
         { // erase the flash
 
@@ -79,12 +89,9 @@ namespace flash
             FLASH->CR |= FLASH_CR_PER;                     /* (1) */
             FLASH->AR = (uint32_t)__SEC_CONFIG_DATA_START; /* (2) */
             FLASH->CR |= FLASH_CR_STRT;                    /* (3) */
-            while ((FLASH->SR & FLASH_SR_BSY) != 0)        /* (4) */
-            {
 
-                /* For robust implementation, add here time-out management */
-                ;
-            }
+            WAIT_FOR_FLASH_N_BSY; /* (4) */
+
             if ((FLASH->SR & FLASH_SR_EOP) != 0) /* (5) */
             {
                 FLASH->SR = FLASH_SR_EOP; /* (6)*/
@@ -92,13 +99,12 @@ namespace flash
             else
             {
                 /* Manage the error cases */
-                sendln("[ERR] could not erase flash?");
-                sendln(FLASH->SR);
+                printf("[ERR] could not erase flash? %X\n", FLASH->SR);
             }
             FLASH->CR &= ~FLASH_CR_PER; /* (7) */
         }
 
-        sendln("flash erased");
+        printf("flash erased\n");
     }
 
     void program_flash_start()
@@ -110,13 +116,11 @@ namespace flash
         /* (4) Check the EOP flag in the FLASH_SR register */
         /* (5) clear it by software by writing it at 1 */
         /* (6) Reset the PG Bit to disable programming */
-        FLASH->CR |= FLASH_CR_PG;                                       /* (1) */
-        *(__IO uint16_t *)(__SEC_CONFIG_DATA_START) = (uint16_t)0xFF00; /* (2) */
-        while ((FLASH->SR & FLASH_SR_BSY) != 0)                         /* (3) */
-        {
-            /* For robust implementation, add here time-out management */
-            ;
-        }
+        FLASH->CR |= FLASH_CR_PG; /* (1) */
+        WAIT_FOR_FLASH_N_BSY;     /* (3) */
+
+        *(__IO uint16_t *)(__SEC_CONFIG_DATA_START) = (uint16_t)1; /* (2) */
+        WAIT_FOR_FLASH_N_BSY;                                      /* (3) */
 
         if ((FLASH->SR & FLASH_SR_EOP) != 0) /* (4) */
         {
@@ -132,13 +136,14 @@ namespace flash
 
     void test()
     {
-        printf("flash test start");
+        printf("flash test start\n");
+        printf("config data at %p\n", (void *)__SEC_CONFIG_DATA_START);
+        flash_unlock();
 
         {
-            prinf_arrln("%ld", (uint8_t *)__SEC_CONFIG_DATA_START, 10);
+            // prinf_arrln("%ld", (uint8_t *)__SEC_CONFIG_DATA_START, 10);
+            // erase_page();
         }
-
-        // erase_page();
 
         {
             prinf_arrln("%ld", (uint8_t *)__SEC_CONFIG_DATA_START, 10);

@@ -9,6 +9,7 @@
 
 #include "sys/printf.hpp"
 #include "util.hpp"
+#include "flash.hpp"
 
 namespace global
 {
@@ -45,11 +46,12 @@ int main(void)
 
   ic::init_ic();
 
+
   memset(global::found_signals, 255, sizeof(global::found_signals));
 
   static uint32_t found_index = 0;
   printf("hello world!\n");
-
+  flash::test();
   while (1)
   {
 

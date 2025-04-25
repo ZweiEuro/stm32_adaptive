@@ -59,26 +59,6 @@ extern "C"
 #define printf printf_
     int printf_(const char *format, ...);
 
-#define printf_arr(fmt, arr, n)     \
-    do                              \
-    {                               \
-        printf("[");                \
-        for (int i = 0; i < n; i++) \
-        {                           \
-                                    \
-            printf(fmt, arr[i]);    \
-            printf(", ");           \
-        }                           \
-        printf("]");                \
-    } while (false);
-
-#define prinf_arrln(fmt, arr, n) \
-    do                           \
-    {                            \
-        printf_arr(fmt, arr, n); \
-        printf("\n");            \
-    } while (false);
-
 /**
  * Tiny sprintf implementation
  * Due to security reasons (buffer overflow) YOU SHOULD CONSIDER USING (V)SNPRINTF INSTEAD!
@@ -122,6 +102,32 @@ extern "C"
      * \return The number of characters that are sent to the output function, not counting the terminating null character
      */
     int fctprintf(void (*out)(char character, void *arg), void *arg, const char *format, ...);
+
+#define printf_arr(fmt, arr, n)     \
+    do                              \
+    {                               \
+        printf("[");                \
+        for (int i = 0; i < n; i++) \
+        {                           \
+                                    \
+            printf(fmt, arr[i]);    \
+            printf(", ");           \
+        }                           \
+        printf("]");                \
+    } while (false);
+
+#define prinf_arrln(fmt, arr, n) \
+    do                           \
+    {                            \
+        printf_arr(fmt, arr, n); \
+        printf("\n");            \
+    } while (false);
+
+#define PRINT_REG(reg)                              \
+    do                                              \
+    {                                               \
+        printf("%s :        0x%08lX\n", #reg, reg); \
+    } while (false)
 
 #ifdef __cplusplus
 }
