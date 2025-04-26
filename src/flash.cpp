@@ -111,6 +111,7 @@ namespace flash
 
     void program_flash_start()
     {
+        printf("start write\n");
 
         /* (1) Set the PG bit in the FLASH_CR register to enable programming */
         /* (2) Perform the data write (half-word) at the desired address */
@@ -118,13 +119,14 @@ namespace flash
         /* (4) Check the EOP flag in the FLASH_SR register */
         /* (5) clear it by software by writing it at 1 */
         /* (6) Reset the PG Bit to disable programming */
+        WAIT_FOR_FLASH_N_BSY;
         FLASH->CR |= FLASH_CR_PG; /* (1) */
 
         PRINT_REG(FLASH->CR);
         PRINT_REG(FLASH->SR);
 
-        *(__IO uint16_t *)(__SEC_CONFIG_DATA_START) = 0; /* (2) */
-        WAIT_FOR_FLASH_N_BSY;                            /* (3) */
+        *(__IO uint16_t *)(__SEC_CONFIG_DATA_START) = (uint16_t)0; /* (2) */
+        WAIT_FOR_FLASH_N_BSY;                                      /* (3) */
 
         if ((FLASH->SR & FLASH_SR_EOP) != 0) /* (4) */
         {
@@ -141,6 +143,7 @@ namespace flash
     void test()
     {
         printf("flash test start\n");
+        printf("address: %p\n", __SEC_CONFIG_DATA_START);
         PRINT_REG(FLASH->CR);
         flash_unlock();
 

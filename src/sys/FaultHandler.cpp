@@ -91,8 +91,15 @@ extern "C"
         printf("PSR:        0x%08lX\n", psr);
 
         printf("\n Flash:\n");
+        PRINT_REG(FLASH->ACR);
         PRINT_REG(FLASH->SR);
         PRINT_REG(FLASH->CR);
+        PRINT_REG(FLASH->AR);
+        PRINT_REG(FLASH->OBR);
+        PRINT_REG(FLASH->WRPR);
+
+        printf("\n RCC: \n");
+        PRINT_REG(RCC->CR);
 
         /*
         uint32_t hfsr = SCB->HFSR;
