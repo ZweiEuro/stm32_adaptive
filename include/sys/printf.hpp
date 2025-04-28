@@ -123,10 +123,10 @@ extern "C"
         printf("\n");            \
     } while (false);
 
-#define PRINT_REG(reg)                              \
-    do                                              \
-    {                                               \
-        printf("%s :        0x%08lX\n", #reg, reg); \
+#define PRINT_REG(reg)                                                        \
+    do                                                                        \
+    {                                                                         \
+        printf("%s:%d %s :        0x%08lX\n", __FILE__, __LINE__, #reg, reg); \
     } while (false)
 
 #ifdef __cplusplus

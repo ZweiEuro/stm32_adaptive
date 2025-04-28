@@ -39,7 +39,7 @@ int main(void)
 {
   setup_pinouts();
 
-  rcc::SYSTICK_init();
+  // rcc::SYSTICK_init();
   rcc::RCC_init();
 
   USART_Init(9600);
