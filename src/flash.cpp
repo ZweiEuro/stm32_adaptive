@@ -4,7 +4,7 @@
 #include "usart.hpp"
 #include "sys/printf.hpp"
 #include "rcc.hpp"
-
+#include "util.hpp"
 namespace flash
 {
 
@@ -115,22 +115,18 @@ namespace flash
         printf("flash erased\n");
     }
 
-    void program_flash_start()
+    inline void write_half_word(uint32_t offset_on_page, uint16_t value)
     {
-        printf("start write\n");
-
-        /* (1) Set the PG bit in the FLASH_CR register to enable programming */
-        /* (2) Perform the data write (half-word) at the desired address */
-        /* (3) Wait until the BSY bit is reset in the FLASH_SR register */
-        /* (4) Check the EOP flag in the FLASH_SR register */
-        /* (5) clear it by software by writing it at 1 */
-        /* (6) Reset the PG Bit to disable programming */
         FLASH_WaitForLastOperation();
-        FLASH->CR |= FLASH_CR_PG; /* (1) */
+        FLASH->CR |= FLASH_CR_PG;
 
-        PRINT_REG(FLASH->CR);
-        PRINT_REG(FLASH->SR);
-        *(__IO uint16_t *)(__SEC_CONFIG_DATA_START) = (uint16_t)0; /* (2) */
+        if (__SEC_CONFIG_DATA_START[offset_on_page] != 0xFF)
+        {
+            printf("Cannot write to non erased section!");
+            return;
+        }
+
+        *(__IO uint16_t *)(&__SEC_CONFIG_DATA_START[offset_on_page]) = (uint16_t)value;
 
         if (FLASH_WaitForLastOperation() != 0) // 3, 4, 5
         {
@@ -138,12 +134,29 @@ namespace flash
             sendln("[ERR] could not write to flash");
         }
 
-        FLASH->CR &= ~FLASH_CR_PG; /* (6) */
+        FLASH->CR &= ~FLASH_CR_PG;
+    }
+
+    void program_flash_start()
+    {
+        printf("start write\n");
+
+        for (int i = 0; i < sizeof(__SEC_CONFIG_DATA_START); i++)
+        {
+
+            if (__SEC_CONFIG_DATA_START[i] != 0xFF)
+            {
+                continue;
+            }
+            write_half_word(i, i);
+            return;
+        }
     }
 
     void test()
     {
         printf("flash test start\n");
+        printf("flash size %ld\n", *(uint16_t *)FLASHSIZE_BASE);
         printf("address: %p\n", __SEC_CONFIG_DATA_START);
         PRINT_REG(FLASH->CR);
         flash_unlock();
@@ -154,7 +167,7 @@ namespace flash
         }
 
         {
-            prinf_arrln("%ld", (uint8_t *)__SEC_CONFIG_DATA_START, 10);
+            // prinf_arrln("%ld", (uint8_t *)__SEC_CONFIG_DATA_START, 10);
         }
         program_flash_start();
 

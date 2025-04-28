@@ -34,12 +34,13 @@ void toggle_onboard()
   GPIOA->ODR ^= PIN_PA4_Pos;
 }
 
+extern uint8_t __SEC_CONFIG_DATA_START[1024];
 // Alternates blue and green LEDs quickly
 int main(void)
 {
   setup_pinouts();
 
-  // rcc::SYSTICK_init();
+  rcc::SYSTICK_init();
   rcc::RCC_init();
 
   USART_Init(9600);
@@ -50,11 +51,7 @@ int main(void)
   printf("hello world!\n");
   flash::test();
 
-  while (1)
-  {
-    ;
-  }
-
+  return 0;
   ic::init_ic();
 
   while (1)
