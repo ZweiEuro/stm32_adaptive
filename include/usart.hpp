@@ -2,6 +2,7 @@
 
 // ---------------------------------------------------------------------------
 #include "stm32f0xx.h"
+#include "stdint.h"
 // ---------------------------------------------------------------------------
 #define USART_BUFFER_SIZE 64
 
@@ -15,34 +16,17 @@ void USART_Init(uint32_t baudrate);
 // USART
 bool USART_GetByte(uint8_t &dest, bool blocking = false);
 
-// overloaded senders
-void send(const char v);
-void sendln(const char *v);
-void send(const char *v);
+#define send(...)
+#define sendln(...)
+#define send_array(...)
+#define send_arrayln(...)
 
-void send(const int v);
-void send(const uint32_t v);
-void send(const float v);
-
-template <typename T>
-void send_array(T *array, int size)
+#ifdef __cplusplus
+extern "C"
 {
+#endif
 
-    send("[");
-
-    for (int i = 0; i < size; i++)
-    {
-
-        send(array[i]);
-        if (i < (size - 1))
-        {
-            send(", ");
-        }
-    }
-
-    send("]");
+    void _putchar(const char c);
+#ifdef __cplusplus
 }
-
-void send_bin(uint32_t v);
-
-// ---------------------------------------------------------------------------
+#endif

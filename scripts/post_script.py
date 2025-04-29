@@ -23,7 +23,7 @@ one_bit =  Proto([360, 1080, 1080, 360, 0, 0, 0, 0], 0.3)
 
 
 def after_upload(source, target, env):
-    print(env.Dump())
+    # print(env.Dump())
     protos = [sync_bit, zero_bit, one_bit]
 
 

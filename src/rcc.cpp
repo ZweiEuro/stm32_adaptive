@@ -10,7 +10,15 @@ namespace rcc
         /* Enable Prefetch Buffer */
         FLASH->ACR |= FLASH_ACR_PRFTBE;
         /* Flash 1 wait state */
+        // we run under 8mhz, so latency is not needed!
+
+#if 1
+        CLEAR_BIT(FLASH->ACR, 0b111 << FLASH_ACR_LATENCY_Pos); // clear latency
+#else
+        // IF         24 MHz < SYSCLK ≤ 48 MHz
         FLASH->ACR |= FLASH_ACR_LATENCY;
+#endif
+
 #ifdef INTERNAL_OSCILLATOR
         /* Enable HSI */
         RCC->CR |= RCC_CR_HSION;

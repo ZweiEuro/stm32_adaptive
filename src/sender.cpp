@@ -116,7 +116,7 @@ namespace sender
         NVIC_EnableIRQ(TIM14_IRQn);
     }
 
-    void send(const uint8_t pattern_indices[], uint8_t length)
+    void send_434(const uint8_t pattern_indices[], uint8_t length)
     {
         ic::disable_ic();
 
@@ -148,8 +148,6 @@ namespace sender
 
         while (_sending)
             __asm("nop");
-
-        ::sendln("done");
 
         free(_pattern_indices);
         _pattern_indices = nullptr;

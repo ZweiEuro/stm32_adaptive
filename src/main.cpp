@@ -7,7 +7,9 @@
 #include "config.hpp"
 #include "sender.hpp"
 
+#include "sys/printf.hpp"
 #include "util.hpp"
+#include "flash.hpp"
 
 namespace global
 {
@@ -32,6 +34,7 @@ void toggle_onboard()
   GPIOA->ODR ^= PIN_PA4_Pos;
 }
 
+extern uint8_t __SEC_CONFIG_DATA_START[1024];
 // Alternates blue and green LEDs quickly
 int main(void)
 {
@@ -42,11 +45,12 @@ int main(void)
 
   USART_Init(9600);
 
-  ic::init_ic();
-
   memset(global::found_signals, 255, sizeof(global::found_signals));
 
   static uint32_t found_index = 0;
+  flash::test();
+
+  ic::init_ic();
 
   while (1)
   {

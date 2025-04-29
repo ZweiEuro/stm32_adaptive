@@ -29,6 +29,7 @@ namespace conf
         C_PRINT = 'p', // character 'p'
         C_FLUSH = 'f', // print out all the "found" things
         C_TEST = 't',  // send hard-coded test signal
+        C_FLASH_TEST = 'a',
 
         // END
         M_MAX

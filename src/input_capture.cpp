@@ -134,7 +134,6 @@ namespace ic
             }
         }
 
-// Declarations of this file
 #ifdef __cplusplus
     }
 #endif
@@ -185,9 +184,9 @@ namespace ic
 
     // CLASS
 
-    PeriodPattern::PeriodPattern(const uint16_t signal_pattern[PATTERN_MAX_N], float tolerance)
+    PeriodPattern::PeriodPattern(const uint16_t signal_pattern[PATTERN_MAX_N], uint8_t tolerance)
     {
-        _tolerance = tolerance;
+        _tolerance_mul_256 = tolerance;
         memcpy(periods, signal_pattern, 8 * sizeof(uint16_t));
 
         _length = PATTERN_MAX_N;
@@ -203,7 +202,6 @@ namespace ic
 
     bool PeriodPattern::match_window(const uint16_t signal_pattern[PATTERN_MAX_N])
     {
-
         if (_length == 0)
         {
             return false;
@@ -225,8 +223,11 @@ namespace ic
                 return false;
             }
 
-            const uint32_t lower_bound = target_val * (1.0 - _tolerance);
-            const uint32_t upper_bound = target_val * (1.0 + _tolerance);
+            // fixed point math to spare ourselves the float struggle
+            uint32_t lower_bound = target_val * 256 - target_val * _tolerance_mul_256;
+            lower_bound /= 256;
+            uint32_t upper_bound = target_val * 256 + target_val * _tolerance_mul_256;
+            upper_bound /= 256;
 
             const bool within_tolerance = lower_bound <= signal_period &&
                                           signal_period <= upper_bound;
@@ -271,7 +272,7 @@ namespace ic
         send(' ');
         send_array(periods, this->getLength());
         send(" t: ");
-        send(this->_tolerance);
+        send(this->_tolerance_mul_256);
         send("\n");
     }
 }
