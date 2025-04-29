@@ -9,7 +9,7 @@ class PeriodPattern
 public:
     uint8_t _padding = 0;
     uint16_t periods[PATTERN_MAX_N] = {0};
-    uint8_t _tolerance_mul_256 = 0; // Tolerance (0 - 1.0) t = _tolerance_mul_256 / 256
+    uint8_t _tolerance_mul_255 = 0; // Tolerance (0 - 1.0) t = _tolerance_mul_255 / 255
 
     int getLength() const;
 

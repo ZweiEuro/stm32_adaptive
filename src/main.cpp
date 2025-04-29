@@ -22,8 +22,6 @@ int main(void)
 
   usart::init(9600);
 
-  static uint32_t found_index = 0;
-
   printf("Hello world!\n");
 
   sender::setup();

@@ -22,7 +22,7 @@ zero_bit = Proto([360, 1080, 360, 1080, 0, 0, 0, 0], 0.3)
 one_bit =  Proto([360, 1080, 1080, 360, 0, 0, 0, 0], 0.3)
 
 
-def after_upload(source, target, env):
+def upload_protocols(source, target, env):
     # print(env.Dump())
     protos = [sync_bit, zero_bit, one_bit]
 
@@ -47,10 +47,32 @@ def after_upload(source, target, env):
     # stm32.write(int(ord('s')).to_bytes(1, 'big'))
     stm32.close()
 
+def enable_capture(source, target, env):
+    # print(env.Dump())
+    protos = [sync_bit, zero_bit, one_bit]
+
+
+    port = "/dev/ttyUSB0"
+    if env:
+        prot = env["UPLOAD_PORT"]
+
+
+    stm32 = serial.Serial(port=port, baudrate=BAUD_RATE, timeout=.1)
+
+    # enable capture mode
+    stm32.write(int(ord('s')).to_bytes(1, 'big'))
+    stm32.close()
+
 
 if __name__ == '__main__':
-    after_upload(None, None, None)
+    upload_protocols(None, None, None)
 else:
     pass
     # upload a fixed pattern set on the chip
-    #env.AddPostAction("upload", after_upload)
+    # env.AddPostAction("upload", upload_protocols)
+
+    # start capture after uploading
+    #env.AddPostAction("upload", enable_capture)
+
+
+

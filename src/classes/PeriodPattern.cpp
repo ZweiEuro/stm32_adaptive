@@ -5,9 +5,11 @@
 
 // CLASS
 
+#define IC_DEBUG 0
+
 PeriodPattern::PeriodPattern(const uint16_t signal_pattern[PATTERN_MAX_N], uint8_t tolerance)
 {
-    _tolerance_mul_256 = tolerance;
+    _tolerance_mul_255 = tolerance;
     memcpy(periods, signal_pattern, 8 * sizeof(uint16_t));
 }
 
@@ -51,10 +53,10 @@ bool PeriodPattern::match_window(const uint16_t signal_pattern[PATTERN_MAX_N])
         }
 
         // fixed point math to spare ourselves the float struggle
-        uint32_t lower_bound = target_val * 256 - target_val * _tolerance_mul_256;
-        lower_bound /= 256;
-        uint32_t upper_bound = target_val * 256 + target_val * _tolerance_mul_256;
-        upper_bound /= 256;
+        uint32_t lower_bound = target_val * 255 - target_val * _tolerance_mul_255;
+        lower_bound /= 255;
+        uint32_t upper_bound = target_val * 255 + target_val * _tolerance_mul_255;
+        upper_bound /= 255;
 
         const bool within_tolerance = lower_bound <= signal_period &&
                                       signal_period <= upper_bound;
@@ -62,30 +64,17 @@ bool PeriodPattern::match_window(const uint16_t signal_pattern[PATTERN_MAX_N])
         if (!within_tolerance)
         {
 #if IC_DEBUG
-            send("miss: ");
-            send(index);
-            send(" ");
-            send(lower_bound);
-            send(" <= ");
-            send(signal_period);
-            send(" <= ");
-            send(upper_bound);
-            send('\n');
+
+            printf("miss [%d]: %ld <= %ld <= %ld\n", index, lower_bound, signal_period, upper_bound);
+
 #endif
             return false;
         }
         else
         {
 #if IC_DEBUG
-            send("good: ");
-            send(index);
-            send(" ");
-            send(lower_bound);
-            send(" <= ");
-            send(signal_period);
-            send(" <= ");
-            send(upper_bound);
-            send('\n');
+            printf("hit [%d]: %ld <= %ld <= %ld\n", index, lower_bound, signal_period, upper_bound);
+
 #endif
         }
     }
@@ -94,6 +83,6 @@ bool PeriodPattern::match_window(const uint16_t signal_pattern[PATTERN_MAX_N])
 
 void PeriodPattern::print()
 {
-    printf("[PP] l: %ld t: %ld/256 timings: ", getLength(), _tolerance_mul_256);
+    printf("[PP] l: %ld t: %ld/256 timings: ", getLength(), _tolerance_mul_255);
     printf_arrln("%ld", this->periods, this->getLength());
 }

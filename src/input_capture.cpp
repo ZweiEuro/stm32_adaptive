@@ -136,7 +136,7 @@ namespace ic
 
             if (SR & TIM_SR_CC1OF)
             {
-                printf("[Err] overcapture!\n");
+                util::toggle_onboard(); // problem!
             }
 
             if (SR & TIM_SR_UIF)
@@ -166,8 +166,14 @@ namespace ic
             return -1;
         }
 
-        // send_array(window, 8);
-        // send("\n");
+        // TODO: remove!
+        // only process after a delay
+        if (rcc::getSystick() < last_time_interrupted + 1000)
+        {
+            return -1;
+        }
+
+        disable_ic();
 
         // check ever pattern and check for a hit
 
@@ -184,6 +190,7 @@ namespace ic
             {
                 // shift out the signal we hit
                 signalBuffer.shift_read_head(period_pattern->getLength());
+
                 return period_pattern_index;
             }
         }
@@ -191,6 +198,7 @@ namespace ic
         // shift ahead by 1
         signalBuffer.shift_read_head();
 
+        enable_ic();
         return -1;
     }
 

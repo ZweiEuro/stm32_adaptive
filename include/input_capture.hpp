@@ -2,7 +2,6 @@
 #include <inttypes.h>
 #include <string.h>
 
-#define IC_DEBUG false
 namespace ic
 {
     void init_ic();

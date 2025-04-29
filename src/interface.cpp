@@ -42,7 +42,7 @@ namespace interface
                 }
 
                 // tolerance value value between 1 - 255 representing fraction of percentage
-                tmp[i]._tolerance_mul_256 = getchar();
+                tmp[i]._tolerance_mul_255 = getchar();
             }
 
             flash::savePatterns(tmp, n_patterns);
@@ -71,7 +71,7 @@ namespace interface
 
         case C_DEV_TEST: // 'a'
 
-            printf("sizeof: %d", sizeof(PeriodPattern));
+            printf("sizeof: %d\n", sizeof(PeriodPattern));
             for (int i = 0;; i++)
             {
                 auto p = flash::getPattern(i);
