@@ -4,7 +4,7 @@
 #include "rcc.hpp"
 #include "SignalBuffer.hpp"
 #include "input_capture.hpp"
-#include "config.hpp"
+#include "interface.hpp"
 #include "sender.hpp"
 
 #include "sys/printf.hpp"
@@ -48,14 +48,24 @@ int main(void)
   memset(global::found_signals, 255, sizeof(global::found_signals));
 
   static uint32_t found_index = 0;
-  flash::test();
+
+  printf("Hello world!\n");
+
+  sender::setup();
+
+  TIM14->ARR = 256;
+  TIM14->CR1 |= TIM_CR1_CEN;
+  while (1)
+  {
+    ;
+  }
 
   ic::init_ic();
 
   while (1)
   {
 
-    conf::handle_usart();
+    interface::handle_usart();
 
     auto found = ic::process_signals();
 

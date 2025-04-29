@@ -1,7 +1,7 @@
 #include "input_capture.hpp"
 #include "usart.hpp"
 
-#include "config.hpp"
+#include "interface.hpp"
 
 #include "stdlib.h"
 #include "main.hpp"
@@ -9,7 +9,7 @@
 #include "flash.hpp"
 #include "sys/printf.hpp"
 
-namespace conf
+namespace interface
 {
     int n_patterns = 0;
     ic::PeriodPattern **period_patterns = nullptr;
@@ -17,18 +17,18 @@ namespace conf
     void add_pattern(ic::PeriodPattern *pattern)
     {
 
-        if (conf::period_patterns == nullptr)
+        if (interface::period_patterns == nullptr)
         {
-            conf::period_patterns = (ic::PeriodPattern **)calloc(sizeof(ic::PeriodPattern *), conf::n_patterns);
+            interface::period_patterns = (ic::PeriodPattern **)calloc(sizeof(ic::PeriodPattern *), interface::n_patterns);
         }
         static int index = 0;
 
-        if (index >= conf::n_patterns)
+        if (index >= interface::n_patterns)
         {
             send("[ERR] patterns full");
         }
 
-        conf::period_patterns[index] = pattern;
+        interface::period_patterns[index] = pattern;
         index++;
     }
 

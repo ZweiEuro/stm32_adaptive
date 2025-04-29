@@ -3,7 +3,7 @@
 #include "usart.hpp"
 #include "sender.hpp"
 #include "stdlib.h"
-#include "config.hpp"
+#include "interface.hpp"
 namespace sender
 {
 
@@ -25,13 +25,17 @@ namespace sender
 
         void TIM14_IRQHandler(void)
         {
+
+            GPIOA->ODR ^= PIN_PA0_Pos;
+
             const auto SR = TIM14->SR;
             TIM14->SR = 0;
 
+            return;
             if (SR & TIM_SR_UIF)
             {
 
-                auto current_period = conf::period_patterns[_pattern_indices[_current_pattern_indices_index]];
+                auto current_period = interface::period_patterns[_pattern_indices[_current_pattern_indices_index]];
 
                 if (_current_pattern_period_index >= current_period->getLength())
                 {
@@ -48,7 +52,7 @@ namespace sender
                     else
                     {
                         // get the next one
-                        current_period = conf::period_patterns[_pattern_indices[_current_pattern_indices_index]];
+                        current_period = interface::period_patterns[_pattern_indices[_current_pattern_indices_index]];
                     }
                 }
 
@@ -63,6 +67,17 @@ namespace sender
 
     void setup()
     {
+
+        static bool _setup = false;
+        if (_setup)
+        {
+            return;
+        }
+        else
+        {
+            _setup = true;
+        }
+
         // enable power
         RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;
 
@@ -119,13 +134,7 @@ namespace sender
     void send_434(const uint8_t pattern_indices[], uint8_t length)
     {
         ic::disable_ic();
-
-        static bool _setup = false;
-        if (!_setup)
-        {
-            _setup = true;
-            setup();
-        }
+        setup();
 
         // copy over the indices that are to be sent
         _pattern_indices = (uint8_t *)calloc(sizeof(uint8_t), length);
@@ -137,7 +146,7 @@ namespace sender
         _current_pattern_period_index = 1;
 
         // load first value manually
-        TIM14->ARR = conf::period_patterns[_current_pattern_indices_index]->periods[0];
+        TIM14->ARR = interface::period_patterns[_current_pattern_indices_index]->periods[0];
 
         // wait until done
         _sending = true;

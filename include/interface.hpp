@@ -1,7 +1,7 @@
 #include "inttypes.h"
 #include "input_capture.hpp"
 
-namespace conf
+namespace interface
 {
     /**
      * Sequence:

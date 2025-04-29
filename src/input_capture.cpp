@@ -4,7 +4,7 @@
 #include "SignalBuffer.hpp"
 #include "main.hpp"
 #include "util.hpp"
-#include "config.hpp"
+#include "interface.hpp"
 
 namespace ic
 {
@@ -166,12 +166,12 @@ namespace ic
         // send("\n");
 
         // check ever pattern and check for a hit
-        for (int i = 0; i < conf::n_patterns; i++)
+        for (int i = 0; i < interface::n_patterns; i++)
         {
-            if (conf::period_patterns[i]->match_window(window))
+            if (interface::period_patterns[i]->match_window(window))
             {
                 // shift out the signal we hit
-                signalBuffer.shift_read_head(conf::period_patterns[i]->getLength());
+                signalBuffer.shift_read_head(interface::period_patterns[i]->getLength());
                 return i;
             }
         }
