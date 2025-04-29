@@ -155,10 +155,7 @@ namespace flash
 
     void test()
     {
-        printf("flash test start\n");
-        printf("flash size %ld\n", *(uint16_t *)FLASHSIZE_BASE);
-        printf("address: %p\n", __SEC_CONFIG_DATA_START);
-        PRINT_REG(FLASH->CR);
+
         flash_unlock();
 
         {
@@ -174,7 +171,5 @@ namespace flash
         {
             prinf_arrln("%ld", (uint8_t *)__SEC_CONFIG_DATA_START, 10);
         }
-
-        printf("flash test end");
     }
 }

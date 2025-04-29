@@ -67,21 +67,20 @@ namespace conf
                 }
 
                 USART_GetByte(byte, true); // value between 1 - 255 representing fraction of percentage
-                float t_frac = byte;
-                tolerance = t_frac / 255.0;
+                uint8_t t_frac = byte;
 
-                add_pattern(new ic::PeriodPattern(tmp, tolerance));
+                add_pattern(new ic::PeriodPattern(tmp, t_frac));
             }
 
             break;
 
         case C_START:
             ic::enable_ic();
-            printf("started");
+            printf("s");
             break;
         case C_HALT:
             ic::disable_ic();
-            printf("halted");
+            printf("h");
             break;
         case C_FLUSH:
 
@@ -95,6 +94,7 @@ namespace conf
 
         case C_PRINT:
         {
+#if 0
             send("print config: n = ");
             send(n_patterns);
             send('\n');
@@ -105,6 +105,7 @@ namespace conf
             }
 
             send("\n");
+#endif
         }
         break;
 

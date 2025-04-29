@@ -44,7 +44,8 @@ _estack = ORIGIN(RAM) + LENGTH(RAM); /* end of "RAM" Ram type memory */
 _Min_Heap_Size = 0x200; /* required amount of heap */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
-_config_data_size = 1k;
+_signal_pattern_data = 1k;
+_system_run_data = 1k;
 
 /* Memories definition */
 MEMORY
@@ -52,10 +53,13 @@ MEMORY
   RAM         (xrw) : ORIGIN = 0x20000000     , LENGTH = 4K
   
   /* reduced from 16kb so we have last page free*/
-  FLASH       (rx)  : ORIGIN = 0x8000000      , LENGTH = (16K - _config_data_size) 
+  FLASH       (rx)  : ORIGIN = 0x8000000      , LENGTH = (16K - _signal_pattern_data - _system_run_data) 
   
   /* Read only since the flash should only write through its interface*/
-  CONFIG_DATA (rx)  : ORIGIN = 0x8000000 + (16k - _config_data_size), LENGTH = _config_data_size 
+  SIGNAL_PATTERNS_DATA (rx)  : ORIGIN = 0x8000000 + (16k - _system_run_data - _signal_pattern_data), LENGTH = _signal_pattern_data 
+
+  SYSTEM_RUN_DATA (rx)       : ORIGIN = 0x8000000 + (16k - _system_run_data), LENGTH = _system_run_data 
+
 }
 
 /* Sections */
@@ -198,10 +202,18 @@ From:
 https://stackoverflow.com/questions/28503808/allocating-memory-in-flash-for-user-data-stm32f4-hal?rq=4 
 https://stackoverflow.com/questions/65846716/how-to-get-the-location-of-a-section-in-c-code
 */
-  .CONFIG_DATA :
+  .SIGNAL_PATTERNS_DATA :
   {
     . = ALIGN(4);
-    __SEC_CONFIG_DATA_START = ABSOLUTE(.);
+    __SEC_SIGNAL_PATTERNS_DATA_START = ABSOLUTE(.);
     . = ALIGN(4);
-  } > CONFIG_DATA
+  } > SIGNAL_PATTERNS_DATA
+
+
+    .SYSTEM_RUN_DATA :
+  {
+    . = ALIGN(4);
+    __SEC_SYSTEM_RUN_DATA_START = ABSOLUTE(.);
+    . = ALIGN(4);
+  } > SYSTEM_RUN_DATA
 }

@@ -48,10 +48,8 @@ int main(void)
   memset(global::found_signals, 255, sizeof(global::found_signals));
 
   static uint32_t found_index = 0;
-  printf("hello world!\n");
   flash::test();
 
-  return 0;
   ic::init_ic();
 
   while (1)
