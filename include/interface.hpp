@@ -1,6 +1,6 @@
 #include "inttypes.h"
 #include "input_capture.hpp"
-
+#include "classes/PeriodPattern.hpp"
 namespace interface
 {
     /**
@@ -18,7 +18,7 @@ namespace interface
      */
 
     extern int n_patterns; // how many patterns there are
-    extern ic::PeriodPattern **period_patterns;
+    extern PeriodPattern **period_patterns;
 
     enum CMD : uint8_t
     {
@@ -29,7 +29,7 @@ namespace interface
         C_PRINT = 'p', // character 'p'
         C_FLUSH = 'f', // print out all the "found" things
         C_TEST = 't',  // send hard-coded test signal
-        C_FLASH_TEST = 'a',
+        C_DEV_TEST = 'a',
 
         // END
         M_MAX

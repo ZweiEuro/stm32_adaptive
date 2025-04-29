@@ -53,13 +53,6 @@ int main(void)
 
   sender::setup();
 
-  TIM14->ARR = 256;
-  TIM14->CR1 |= TIM_CR1_CEN;
-  while (1)
-  {
-    ;
-  }
-
   ic::init_ic();
 
   while (1)

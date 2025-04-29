@@ -7,18 +7,7 @@
 namespace flash
 {
 
-#ifdef __cplusplus
-    extern "C"
-    {
-#endif
-        // comes from the linker and cannot be mangled
-        extern uint8_t __SEC_SIGNAL_PATTERNS_DATA_START[1024];
-
-        extern uint8_t __SEC_SYSTEM_RUN_DATA_START[1024];
-
-#ifdef __cplusplus
-    }
-#endif
+    // Raw flash operations
 
     inline int FLASH_WaitForLastOperation(uint32_t timeout = 0)
     {
@@ -59,14 +48,11 @@ namespace flash
     void flash_unlock()
     {
 
-        /* (1) Wait till no operation is on going */
-        /* (2) Check that the Flash is unlocked */
-        /* (3) Perform unlock sequence */
-        FLASH_WaitForLastOperation(); /* (1) */
+        FLASH_WaitForLastOperation();
 
-        if ((FLASH->CR & FLASH_CR_LOCK) != 0) /* (2) */
+        if ((FLASH->CR & FLASH_CR_LOCK) != 0)
         {
-            FLASH->KEYR = FLASH_KEY1; /* (3) */
+            FLASH->KEYR = FLASH_KEY1;
             FLASH->KEYR = FLASH_KEY2;
         }
 
@@ -74,103 +60,78 @@ namespace flash
         {
             printf("[ERR] flash unlock error\n");
         }
-
-        printf("unlocked flash\n");
     }
 
     void flash_lock()
     {
 
         SET_BIT(FLASH->CR, FLASH_CR_LOCK);
-
-        printf("locked flash\n");
     }
 
-    void erase_page()
+    void erase_page(const uint8_t *page_start_addr)
     {
+        FLASH_WaitForLastOperation();
 
-        // erase the flash
+        // PER = Page Erase Mode
+        SET_BIT(FLASH->CR, FLASH_CR_PER);
 
-        /* (1) Set the PER bit in the FLASH_CR register to enable page erasing */
-        /* (2) Program the FLASH_AR register to select a page to erase */
-        /* (3) Set the STRT bit in the FLASH_CR register to start the erasing */
-        /* (4) Wait until the BSY bit is reset in the FLASH_SR register */
-        /* (5) Check the EOP flag in the FLASH_SR register */
-        /* (6) Clear EOP flag by software by writing EOP at 1 */
-        /* (7) Reset the PER Bit to disable the page erase */
-        FLASH->CR |= FLASH_CR_PER;                              /* (1) */
-        FLASH->AR = (uint32_t)__SEC_SIGNAL_PATTERNS_DATA_START; /* (2) */
-        FLASH->CR |= FLASH_CR_STRT;                             /* (3) */
+        // Address to clear
+        FLASH->AR = (uint32_t)page_start_addr;
 
-        FLASH_WaitForLastOperation(); /* (4) */
+        SET_BIT(FLASH->CR, FLASH_CR_STRT);
 
-        CLEAR_BIT(FLASH->CR, FLASH_CR_STRT);
-
-        if (FLASH_WaitForLastOperation() != 0) // 5, 6
+        if (FLASH_WaitForLastOperation() != 0)
         {
             printf("[ERR] could not erase flash? %X\n", FLASH->SR);
         }
-
-        FLASH->CR &= ~FLASH_CR_PER; /* (7) */
-
-        printf("flash erased\n");
+        CLEAR_BIT(FLASH->CR, FLASH_CR_PER);
     }
 
-    inline void write_half_word(uint32_t offset_on_page, uint16_t value)
+    void write_to_flash(const uint8_t *destination, const uint8_t *src, const uint32_t num_bytes)
     {
         FLASH_WaitForLastOperation();
-        FLASH->CR |= FLASH_CR_PG;
 
-        if (__SEC_SIGNAL_PATTERNS_DATA_START[offset_on_page] != 0xFF)
+        SET_BIT(FLASH->CR, FLASH_CR_PG);
+
+        for (int half_word_index = 0; half_word_index < num_bytes / 2; half_word_index++)
         {
-            printf("Cannot write to non erased section!");
-            return;
+            ((__IO uint16_t *)destination)[half_word_index] = ((uint16_t *)src)[half_word_index];
+
+            FLASH_WaitForLastOperation();
         }
 
-        *(__IO uint16_t *)(&__SEC_SIGNAL_PATTERNS_DATA_START[offset_on_page]) = (uint16_t)value;
-
-        if (FLASH_WaitForLastOperation() != 0) // 3, 4, 5
-        {
-
-            printf("[ERR] could not write to flash");
-        }
-
-        FLASH->CR &= ~FLASH_CR_PG;
+        CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
     }
 
-    void program_flash_start()
+      // interface from outside
+
+    PeriodPattern *getPattern(int n)
     {
-        printf("start write\n");
+        printf("get period pattern\n");
 
-        for (int i = 0; i < sizeof(__SEC_SIGNAL_PATTERNS_DATA_START); i++)
+        if (__SEC_SIGNAL_PATTERNS_DATA_START[0] != 0xAB)
         {
-
-            if (__SEC_SIGNAL_PATTERNS_DATA_START[i] != 0xFF)
-            {
-                continue;
-            }
-            write_half_word(i, i);
-            return;
+            printf("[Err] no periods to get\n");
+            return nullptr;
         }
+
+        return (PeriodPattern *)__SEC_SIGNAL_PATTERNS_DATA_START + sizeof(PeriodPattern) * n;
     }
 
-    void test()
+    void savePatterns(PeriodPattern *p, int n)
     {
-
         flash_unlock();
 
-        {
-            // prinf_arrln("%ld", (uint8_t *)__SEC_CONFIG_DATA_START, 10);
-            // erase_page();
-        }
+        erase_page(__SEC_SIGNAL_PATTERNS_DATA_START);
 
-        {
-            // prinf_arrln("%ld", (uint8_t *)__SEC_CONFIG_DATA_START, 10);
-        }
-        program_flash_start();
+        // write n and magic byte
+        const uint8_t mbyte_and_number[] = {0xAB, n};
+        write_to_flash(__SEC_SIGNAL_PATTERNS_DATA_START, mbyte_and_number, 2); // write the two bytes
 
-        {
-            prinf_arrln("%ld", (uint8_t *)__SEC_SIGNAL_PATTERNS_DATA_START, 10);
-        }
+        // write the actual data
+        // offset by the 2 byte before
+        write_to_flash((__SEC_SIGNAL_PATTERNS_DATA_START + 2), (uint8_t *)p, n * sizeof(PeriodPattern));
+
+        flash_lock();
     }
 }

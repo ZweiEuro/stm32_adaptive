@@ -11,14 +11,14 @@
 namespace interface
 {
     int n_patterns = 0;
-    ic::PeriodPattern **period_patterns = nullptr;
+    PeriodPattern **period_patterns = nullptr;
 
-    void add_pattern(ic::PeriodPattern *pattern)
+    void add_pattern(PeriodPattern *pattern)
     {
 
         if (interface::period_patterns == nullptr)
         {
-            interface::period_patterns = (ic::PeriodPattern **)calloc(sizeof(ic::PeriodPattern *), interface::n_patterns);
+            interface::period_patterns = (PeriodPattern **)calloc(sizeof(PeriodPattern *), interface::n_patterns);
         }
         static int index = 0;
 
@@ -31,20 +31,26 @@ namespace interface
         index++;
     }
 
+    PeriodPattern *tmp = nullptr;
+
     void handle_usart(void)
     {
 
         switch (getchar())
         {
         case C_SETUP:
-
+        {
             n_patterns = getchar();
+
+            if (tmp != nullptr)
+            {
+                free(tmp);
+            }
+
+            tmp = (PeriodPattern *)calloc(sizeof(PeriodPattern), n_patterns);
 
             for (int i = 0; i < n_patterns; i++)
             {
-                // temporary timing storage
-                uint16_t tmp[PATTERN_MAX_N] = {0};
-                float tolerance = 0.0;
 
                 for (int period_i = 0; period_i < PATTERN_MAX_N; period_i++)
                 {
@@ -53,14 +59,14 @@ namespace interface
                     time_parts[1] = getchar(); // the first part is the UPPER value
                     time_parts[0] = getchar();
                     // re-interpret the two uint8_t as a single uint16_t
-                    tmp[period_i] = *((uint16_t *)time_parts);
+                    tmp[i].periods[period_i] = *((uint16_t *)time_parts);
                 }
 
                 // tolerance value value between 1 - 255 representing fraction of percentage
-                add_pattern(new ic::PeriodPattern(tmp, getchar()));
+                tmp[i]._tolerance_mul_256 = getchar();
             }
-
-            break;
+        }
+        break;
 
         case C_START:
             ic::enable_ic();
@@ -71,12 +77,12 @@ namespace interface
             printf("h");
             break;
         case C_FLUSH:
-            prinf_arrln("%ld", global::found_signals, sizeof(global::found_signals));
+            printf_arrln("%ld", global::found_signals, sizeof(global::found_signals));
 
             break;
 
-        case C_FLASH_TEST:
-            flash::test();
+        case C_DEV_TEST: // 'a'
+            flash::getPattern(0)->print();
             break;
 
         case C_PRINT:

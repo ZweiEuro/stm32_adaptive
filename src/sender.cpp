@@ -25,12 +25,9 @@ namespace sender
         void TIM14_IRQHandler(void)
         {
 
-            GPIOA->ODR ^= PIN_PA0_Pos;
-
             const auto SR = TIM14->SR;
             TIM14->SR = 0;
 
-            return;
             if (SR & TIM_SR_UIF)
             {
 

@@ -123,11 +123,11 @@ extern "C"
         printf("]");                \
     } while (false);
 
-#define prinf_arrln(fmt, arr, n) \
-    do                           \
-    {                            \
-        printf_arr(fmt, arr, n); \
-        printf("\n");            \
+#define printf_arrln(fmt, arr, n) \
+    do                            \
+    {                             \
+        printf_arr(fmt, arr, n);  \
+        printf("\n");             \
     } while (false);
 
 #define PRINT_REG(reg)                                                        \
