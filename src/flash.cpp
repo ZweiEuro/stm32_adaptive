@@ -13,7 +13,9 @@ namespace flash
     {
 #endif
         // comes from the linker and cannot be mangled
-        extern uint8_t __SEC_CONFIG_DATA_START[1024];
+        extern uint8_t __SEC_SIGNAL_PATTERNS_DATA_START[1024];
+
+        extern uint8_t __SEC_SYSTEM_RUN_DATA_START[1024];
 
 #ifdef __cplusplus
     }
@@ -97,9 +99,9 @@ namespace flash
         /* (5) Check the EOP flag in the FLASH_SR register */
         /* (6) Clear EOP flag by software by writing EOP at 1 */
         /* (7) Reset the PER Bit to disable the page erase */
-        FLASH->CR |= FLASH_CR_PER;                     /* (1) */
-        FLASH->AR = (uint32_t)__SEC_CONFIG_DATA_START; /* (2) */
-        FLASH->CR |= FLASH_CR_STRT;                    /* (3) */
+        FLASH->CR |= FLASH_CR_PER;                              /* (1) */
+        FLASH->AR = (uint32_t)__SEC_SIGNAL_PATTERNS_DATA_START; /* (2) */
+        FLASH->CR |= FLASH_CR_STRT;                             /* (3) */
 
         FLASH_WaitForLastOperation(); /* (4) */
 
@@ -120,13 +122,13 @@ namespace flash
         FLASH_WaitForLastOperation();
         FLASH->CR |= FLASH_CR_PG;
 
-        if (__SEC_CONFIG_DATA_START[offset_on_page] != 0xFF)
+        if (__SEC_SIGNAL_PATTERNS_DATA_START[offset_on_page] != 0xFF)
         {
             printf("Cannot write to non erased section!");
             return;
         }
 
-        *(__IO uint16_t *)(&__SEC_CONFIG_DATA_START[offset_on_page]) = (uint16_t)value;
+        *(__IO uint16_t *)(&__SEC_SIGNAL_PATTERNS_DATA_START[offset_on_page]) = (uint16_t)value;
 
         if (FLASH_WaitForLastOperation() != 0) // 3, 4, 5
         {
@@ -141,10 +143,10 @@ namespace flash
     {
         printf("start write\n");
 
-        for (int i = 0; i < sizeof(__SEC_CONFIG_DATA_START); i++)
+        for (int i = 0; i < sizeof(__SEC_SIGNAL_PATTERNS_DATA_START); i++)
         {
 
-            if (__SEC_CONFIG_DATA_START[i] != 0xFF)
+            if (__SEC_SIGNAL_PATTERNS_DATA_START[i] != 0xFF)
             {
                 continue;
             }
@@ -169,7 +171,7 @@ namespace flash
         program_flash_start();
 
         {
-            prinf_arrln("%ld", (uint8_t *)__SEC_CONFIG_DATA_START, 10);
+            prinf_arrln("%ld", (uint8_t *)__SEC_SIGNAL_PATTERNS_DATA_START, 10);
         }
     }
 }
