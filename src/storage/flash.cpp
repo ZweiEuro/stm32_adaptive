@@ -1,4 +1,4 @@
-#include "flash.hpp"
+#include "storage/flash.hpp"
 #include "stm32f030x6.h"
 
 #include "sys/printf_getchar.hpp"

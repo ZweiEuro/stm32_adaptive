@@ -15,9 +15,6 @@ namespace usart
 
     void init(uint32_t baudrate);
 
-    // USART
-    bool getByte(uint8_t &dest, bool blocking = false);
-
 #ifdef __cplusplus
     extern "C"
     {

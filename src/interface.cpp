@@ -5,7 +5,7 @@
 #include "stdlib.h"
 #include "main.hpp"
 #include "sender.hpp"
-#include "flash.hpp"
+#include "storage/flash.hpp"
 #include "sys/printf_getchar.hpp"
 
 namespace interface

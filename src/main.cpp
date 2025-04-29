@@ -8,7 +8,7 @@
 
 #include "sys/printf_getchar.hpp"
 #include "util.hpp"
-#include "flash.hpp"
+#include "storage/flash.hpp"
 #include "sys/usart.hpp"
 
 namespace global
