@@ -7,6 +7,8 @@
 #include "interface.hpp"
 #include "sys/printf_getchar.hpp"
 
+#include "storage/flash.hpp"
+
 namespace ic
 {
 
@@ -167,13 +169,21 @@ namespace ic
         // send("\n");
 
         // check ever pattern and check for a hit
-        for (int i = 0; i < interface::n_patterns; i++)
+
+        for (int period_pattern_index = 0;; period_pattern_index++)
         {
-            if (interface::period_patterns[i]->match_window(window))
+            const auto period_pattern = flash::getPattern(period_pattern_index);
+
+            if (period_pattern == nullptr)
+            {
+                break;
+            }
+
+            if (period_pattern->match_window(window))
             {
                 // shift out the signal we hit
-                signalBuffer.shift_read_head(interface::period_patterns[i]->getLength());
-                return i;
+                signalBuffer.shift_read_head(period_pattern->getLength());
+                return period_pattern_index;
             }
         }
 
@@ -183,4 +193,4 @@ namespace ic
         return -1;
     }
 
- }
+}

@@ -103,11 +103,10 @@ namespace flash
         CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
     }
 
-      // interface from outside
+    // interface from outside
 
     PeriodPattern *getPattern(int n)
     {
-        printf("get period pattern\n");
 
         if (__SEC_SIGNAL_PATTERNS_DATA_START[0] != 0xAB)
         {
@@ -115,7 +114,20 @@ namespace flash
             return nullptr;
         }
 
-        return (PeriodPattern *)__SEC_SIGNAL_PATTERNS_DATA_START + sizeof(PeriodPattern) * n;
+        if (__SEC_SIGNAL_PATTERNS_DATA_START[1] <= n || n < 0)
+        {
+            printf("[Err] pattern index %d does not exist\n", n);
+            return nullptr;
+        }
+
+        auto pattern = &((PeriodPattern *)(__SEC_SIGNAL_PATTERNS_DATA_START + 2))[n];
+
+        if (pattern->_padding != 0)
+        {
+            printf("[Err] pattern at %p has no 0 padding?", pattern);
+            return nullptr;
+        }
+        return pattern;
     }
 
     void savePatterns(PeriodPattern *p, int n)

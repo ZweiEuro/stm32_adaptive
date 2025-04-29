@@ -3,22 +3,10 @@
 #include "classes/PeriodPattern.hpp"
 namespace interface
 {
-    /**
-     * Sequence:
-     * - SETUP
-     * - 8 bit number designating amount of patterns n
-     * - n times:
-     *   - 8 times, 16 bit values (split into 8 bit packets) for the different periods
-     *      - If two hex values are transferred, 0xAA 0xBB then the resulting 16 bit number will be = 0xAABB
-     *   - 1 time , 8  bit value designating tolerance t, denoted 1/t
-     *
-     *
-     *
+
+    /** Uart communication and commands
      *
      */
-
-    extern int n_patterns; // how many patterns there are
-    extern PeriodPattern **period_patterns;
 
     enum CMD : uint8_t
     {
@@ -26,7 +14,6 @@ namespace interface
         C_SETUP,
         C_START = 's', // start input capture
         C_HALT = 'h',  // halt input capture
-        C_PRINT = 'p', // character 'p'
         C_FLUSH = 'f', // print out all the "found" things
         C_TEST = 't',  // send hard-coded test signal
         C_DEV_TEST = 'a',

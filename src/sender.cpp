@@ -3,6 +3,9 @@
 #include "sender.hpp"
 #include "stdlib.h"
 #include "interface.hpp"
+#include "storage/flash.hpp"
+#include "sys/printf_getchar.hpp"
+#include "util.hpp"
 namespace sender
 {
 
@@ -31,7 +34,7 @@ namespace sender
             if (SR & TIM_SR_UIF)
             {
 
-                auto current_period = interface::period_patterns[_pattern_indices[_current_pattern_indices_index]];
+                auto current_period = flash::getPattern(_pattern_indices[_current_pattern_indices_index]);
 
                 if (_current_pattern_period_index >= current_period->getLength())
                 {
@@ -48,7 +51,7 @@ namespace sender
                     else
                     {
                         // get the next one
-                        current_period = interface::period_patterns[_pattern_indices[_current_pattern_indices_index]];
+                        current_period = flash::getPattern(_pattern_indices[_current_pattern_indices_index]);
                     }
                 }
 
@@ -64,15 +67,7 @@ namespace sender
     void setup()
     {
 
-        static bool _setup = false;
-        if (_setup)
-        {
-            return;
-        }
-        else
-        {
-            _setup = true;
-        }
+        BOOL_GATE;
 
         // enable power
         RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;
@@ -142,7 +137,7 @@ namespace sender
         _current_pattern_period_index = 1;
 
         // load first value manually
-        TIM14->ARR = interface::period_patterns[_current_pattern_indices_index]->periods[0];
+        TIM14->ARR = flash::getPattern(_current_pattern_indices_index)->periods[0];
 
         // wait until done
         _sending = true;

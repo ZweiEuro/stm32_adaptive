@@ -51,4 +51,6 @@ def after_upload(source, target, env):
 if __name__ == '__main__':
     after_upload(None, None, None)
 else:
-    env.AddPostAction("upload", after_upload)
+    pass
+    # upload a fixed pattern set on the chip
+    #env.AddPostAction("upload", after_upload)

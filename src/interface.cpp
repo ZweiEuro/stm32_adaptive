@@ -10,28 +10,6 @@
 
 namespace interface
 {
-    int n_patterns = 0;
-    PeriodPattern **period_patterns = nullptr;
-
-    void add_pattern(PeriodPattern *pattern)
-    {
-
-        if (interface::period_patterns == nullptr)
-        {
-            interface::period_patterns = (PeriodPattern **)calloc(sizeof(PeriodPattern *), interface::n_patterns);
-        }
-        static int index = 0;
-
-        if (index >= interface::n_patterns)
-        {
-            printf("[ERR] patterns full");
-        }
-
-        interface::period_patterns[index] = pattern;
-        index++;
-    }
-
-    PeriodPattern *tmp = nullptr;
 
     void handle_usart(void)
     {
@@ -40,14 +18,9 @@ namespace interface
         {
         case C_SETUP:
         {
-            n_patterns = getchar();
+            auto n_patterns = getchar();
 
-            if (tmp != nullptr)
-            {
-                free(tmp);
-            }
-
-            tmp = (PeriodPattern *)calloc(sizeof(PeriodPattern), n_patterns);
+            auto tmp = (PeriodPattern *)calloc(sizeof(PeriodPattern), n_patterns);
 
             for (int i = 0; i < n_patterns; i++)
             {
@@ -65,6 +38,9 @@ namespace interface
                 // tolerance value value between 1 - 255 representing fraction of percentage
                 tmp[i]._tolerance_mul_256 = getchar();
             }
+
+            flash::savePatterns(tmp, n_patterns);
+            free(tmp);
         }
         break;
 
@@ -82,25 +58,17 @@ namespace interface
             break;
 
         case C_DEV_TEST: // 'a'
-            flash::getPattern(0)->print();
-            break;
 
-        case C_PRINT:
-        {
-#if 0
-            send("print config: n = ");
-            send(n_patterns);
-            send('\n');
-
-            for (int i = 0; i < n_patterns; i++)
+            printf("sizeof: %d", sizeof(PeriodPattern));
+            for (int i = 0;; i++)
             {
-                period_patterns[i]->print();
+                auto p = flash::getPattern(i);
+                printf("%p\n", p);
+                if (p == nullptr)
+                    break;
+                p->print();
             }
-
-            send("\n");
-#endif
-        }
-        break;
+            break;
 
         case C_TEST:
         {
