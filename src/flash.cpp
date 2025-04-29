@@ -1,8 +1,7 @@
 #include "flash.hpp"
 #include "stm32f030x6.h"
 
-#include "usart.hpp"
-#include "sys/printf.hpp"
+#include "sys/printf_getchar.hpp"
 #include "rcc.hpp"
 #include "util.hpp"
 namespace flash
@@ -133,7 +132,7 @@ namespace flash
         if (FLASH_WaitForLastOperation() != 0) // 3, 4, 5
         {
 
-            sendln("[ERR] could not write to flash");
+            printf("[ERR] could not write to flash");
         }
 
         FLASH->CR &= ~FLASH_CR_PG;

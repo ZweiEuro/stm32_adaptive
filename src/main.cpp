@@ -1,15 +1,15 @@
 #include "stm32f030x6.h"
 
-#include "usart.hpp"
 #include "rcc.hpp"
 #include "SignalBuffer.hpp"
 #include "input_capture.hpp"
 #include "interface.hpp"
 #include "sender.hpp"
 
-#include "sys/printf.hpp"
+#include "sys/printf_getchar.hpp"
 #include "util.hpp"
 #include "flash.hpp"
+#include "sys/usart.hpp"
 
 namespace global
 {
@@ -43,7 +43,7 @@ int main(void)
   rcc::SYSTICK_init();
   rcc::RCC_init();
 
-  USART_Init(9600);
+  usart::init(9600);
 
   memset(global::found_signals, 255, sizeof(global::found_signals));
 

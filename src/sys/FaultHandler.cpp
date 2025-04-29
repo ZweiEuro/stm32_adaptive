@@ -15,7 +15,7 @@
  */
 
 #include "sys/FaultHandler.hpp"
-#include "sys/printf.hpp"
+#include "sys/printf_getchar.hpp"
 
 /* Local function. */
 

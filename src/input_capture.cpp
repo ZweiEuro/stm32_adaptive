@@ -5,6 +5,7 @@
 #include "main.hpp"
 #include "util.hpp"
 #include "interface.hpp"
+#include "sys/printf_getchar.hpp"
 
 namespace ic
 {
@@ -267,6 +268,9 @@ namespace ic
 
     void PeriodPattern::print()
     {
+        printf("Fix me");
+
+        /*
         send("[PP] l: ");
         send(this->_length);
         send(' ');
@@ -274,5 +278,6 @@ namespace ic
         send(" t: ");
         send(this->_tolerance_mul_256);
         send("\n");
+        */
     }
 }

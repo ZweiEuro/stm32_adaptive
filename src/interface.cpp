@@ -1,5 +1,4 @@
 #include "input_capture.hpp"
-#include "usart.hpp"
 
 #include "interface.hpp"
 
@@ -7,7 +6,7 @@
 #include "main.hpp"
 #include "sender.hpp"
 #include "flash.hpp"
-#include "sys/printf.hpp"
+#include "sys/printf_getchar.hpp"
 
 namespace interface
 {
@@ -25,7 +24,7 @@ namespace interface
 
         if (index >= interface::n_patterns)
         {
-            send("[ERR] patterns full");
+            printf("[ERR] patterns full");
         }
 
         interface::period_patterns[index] = pattern;
@@ -34,19 +33,12 @@ namespace interface
 
     void handle_usart(void)
     {
-        uint8_t byte;
 
-        if (USART_GetByte(byte) == false)
-        {
-            return;
-        }
-
-        switch (byte)
+        switch (getchar())
         {
         case C_SETUP:
-            uint8_t byte;
-            USART_GetByte(byte, true);
-            n_patterns = byte;
+
+            n_patterns = getchar();
 
             for (int i = 0; i < n_patterns; i++)
             {
@@ -58,18 +50,14 @@ namespace interface
                 {
                     // get the two parts of the number
                     uint8_t time_parts[2] = {0};
-                    USART_GetByte(byte, true); // the first part is the UPPER value
-                    time_parts[1] = byte;
-                    USART_GetByte(byte, true);
-                    time_parts[0] = byte;
+                    time_parts[1] = getchar(); // the first part is the UPPER value
+                    time_parts[0] = getchar();
                     // re-interpret the two uint8_t as a single uint16_t
                     tmp[period_i] = *((uint16_t *)time_parts);
                 }
 
-                USART_GetByte(byte, true); // value between 1 - 255 representing fraction of percentage
-                uint8_t t_frac = byte;
-
-                add_pattern(new ic::PeriodPattern(tmp, t_frac));
+                // tolerance value value between 1 - 255 representing fraction of percentage
+                add_pattern(new ic::PeriodPattern(tmp, getchar()));
             }
 
             break;
@@ -83,9 +71,8 @@ namespace interface
             printf("h");
             break;
         case C_FLUSH:
+            prinf_arrln("%ld", global::found_signals, sizeof(global::found_signals));
 
-            send_array(global::found_signals, sizeof(global::found_signals));
-            send('\n');
             break;
 
         case C_FLASH_TEST:
@@ -113,7 +100,7 @@ namespace interface
         {
             static bool toggle = false;
 
-            sendln("sending");
+            printf("sending\n");
 
             if (toggle)
             {

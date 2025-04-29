@@ -3,8 +3,9 @@
 #include <string.h>
 #include <inttypes.h>
 #include <malloc.h>
-#include "usart.hpp"
+
 #include <deque>
+#include "sys/printf_getchar.hpp"
 
 namespace sb
 {
@@ -66,8 +67,8 @@ namespace sb
 
         void print()
         {
-
-            send("[");
+            printf("FIXME");
+            /* send("[");
 
             for (auto v : _queue)
             {
@@ -76,7 +77,7 @@ namespace sb
                 send(", ");
             }
 
-            send("]\n");
+            send("]\n");*/
         }
     };
 }

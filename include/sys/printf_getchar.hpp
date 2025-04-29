@@ -48,6 +48,13 @@ extern "C"
      */
     void _putchar(char character);
 
+#define getchar _getchar
+    /**
+     * Get the next char from the a custom device like UART.
+     * Note: Always blocking!
+     */
+    unsigned char _getchar(void);
+
 /**
  * Tiny printf implementation
  * You have to implement _putchar if you use printf()

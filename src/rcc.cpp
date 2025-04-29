@@ -1,5 +1,4 @@
 #include "rcc.hpp"
-#include "usart.hpp"
 
 namespace rcc
 {

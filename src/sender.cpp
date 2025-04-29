@@ -1,6 +1,5 @@
 #include "stm32f030x6.h"
 
-#include "usart.hpp"
 #include "sender.hpp"
 #include "stdlib.h"
 #include "interface.hpp"

@@ -1,5 +1,4 @@
 #pragma once
-#include "usart.hpp"
 #include <inttypes.h>
 #include <string.h>
 
