@@ -1,9 +1,11 @@
+#pragma once
 #include "inttypes.h"
 #include "input_capture.hpp"
 #include "classes/PeriodPattern.hpp"
+#include <queue>
 namespace interface
 {
-
+    extern std::queue<uint8_t> found_indices;
     /** Uart communication and commands
      *
      */

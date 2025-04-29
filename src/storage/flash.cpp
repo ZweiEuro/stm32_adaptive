@@ -116,7 +116,6 @@ namespace flash
 
         if (__SEC_SIGNAL_PATTERNS_DATA_START[1] <= n || n < 0)
         {
-            printf("[Err] pattern index %d does not exist\n", n);
             return nullptr;
         }
 

@@ -11,8 +11,14 @@
 namespace interface
 {
 
+    std::queue<uint8_t> found_indices;
+
     void handle_usart(void)
     {
+        if (char_available() == false)
+        {
+            return;
+        }
 
         switch (getchar())
         {
@@ -46,14 +52,20 @@ namespace interface
 
         case C_START:
             ic::enable_ic();
-            printf("s");
+            printf("ic enable");
             break;
         case C_HALT:
             ic::disable_ic();
-            printf("h");
+            printf("ic disable");
             break;
         case C_FLUSH:
-            printf_arrln("%ld", global::found_signals, sizeof(global::found_signals));
+            printf("found indices:\n");
+            while (found_indices.empty() == false)
+            {
+                printf("%d ", found_indices.front());
+                found_indices.pop();
+            }
+            printf("\n");
 
             break;
 

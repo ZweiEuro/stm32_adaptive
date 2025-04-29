@@ -72,6 +72,13 @@ namespace sender
         // enable power
         RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;
 
+        { // output pin
+            // enable GPIO bank
+            RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
+
+            // PA0, sender pin
+            GPIOA->MODER |= GPIO_MODER_MODER0_0; // sender pin
+        }
         // Registers:
 
         // CR1

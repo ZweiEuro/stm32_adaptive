@@ -1,5 +1,5 @@
 
-
+#pragma once
 #include "rcc.hpp"
 
 #define BOOL_GATE                   \
@@ -20,4 +20,6 @@ namespace util
 {
 
     void delay_ms(int ms);
+
+    void toggle_onboard();
 }

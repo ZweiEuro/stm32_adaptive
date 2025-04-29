@@ -48,6 +48,8 @@ extern "C"
      */
     void _putchar(char character);
 
+    bool char_available(void);
+
 #define getchar _getchar
     /**
      * Get the next char from the a custom device like UART.

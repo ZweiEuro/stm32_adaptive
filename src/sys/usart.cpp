@@ -50,6 +50,11 @@ namespace usart
     {
 #endif
 
+        bool char_available(void)
+        {
+            return input_queue.empty() == false;
+        }
+
         unsigned char _getchar(void)
         {
 

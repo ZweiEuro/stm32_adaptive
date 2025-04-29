@@ -19,8 +19,16 @@ namespace usart
     extern "C"
     {
 #endif
+        // true if queue is not empty
+        bool char_available(void);
 
+        // print a single char to the output line
         void _putchar(const char c);
+
+        /**
+         * get a single byte from the output line, blocks indefinitely
+         *
+         */
         unsigned char _getchar(void);
 
 #ifdef __cplusplus

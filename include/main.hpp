@@ -3,5 +3,4 @@
 namespace global
 {
 
-    extern uint8_t found_signals[100];
 }

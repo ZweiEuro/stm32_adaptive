@@ -8,12 +8,15 @@
 #include "sys/printf_getchar.hpp"
 
 #include "storage/flash.hpp"
+#include "util.hpp"
 
 namespace ic
 {
 
     void init_ic()
     {
+
+        BOOL_GATE;
 
         // Power up timer unit
         RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
@@ -131,6 +134,11 @@ namespace ic
                 }
             }
 
+            if (SR & TIM_SR_CC1OF)
+            {
+                printf("[Err] overcapture!\n");
+            }
+
             if (SR & TIM_SR_UIF)
             {
                 overflow_counter++;
@@ -154,13 +162,6 @@ namespace ic
 
         // get the current received signals
         if (!signalBuffer.getWindow(window, 8))
-        {
-            return -1;
-        }
-
-        // TODO: remove!
-        // only process after a delay
-        if (rcc::getSystick() < last_time_interrupted + 1000)
         {
             return -1;
         }
