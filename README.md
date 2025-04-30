@@ -3,16 +3,14 @@
 
 ## Checklist:
 
-- [x] Input capturing on pin PA6
-- [x] Systick measuring ms or higher resolution
-- [x] ringbuffer and window matching
-- [x] pattern matching
-- [x] Pattern set and upload via uart
-- [ ] Universal index sending
-- [ ] Button states
-  - [ ] Hold 5 sec -> erase
-  - [ ] push -> save address mode ?
-- [ ] Flash read and write on last page
+Current problems:
+- The receiver circuit is flaky as shit and produces all kinds of problematic input that crashes the chip or just causes indefinite program stalling and starves main thread
+- Button needs to be connected
+- WS28 interface connector
+- dimmer connector
+- relay connector
+
+
 
 
 ## RTC
@@ -23,6 +21,23 @@ Add RTC support for periodic data logging or similar information.
 
 
 # DOCS
+
+# Hardware:
+
+Timer units, grouped by type: 
+- TIM1: Advanced, inaccessible on demo board due to pin placement and uart connections
+- TIM2/3: General purpose; 
+- TIM14: General purpose; 
+- TIM15/16/17: General purpose; **tim15 does not exist on stm32F030**; 
+- TIM6/7: General purpose; **do not exist on stm32f030**
+
+All TIM units: TIM1, TIM3, TIM14, TIM16, TIM17
+
+PA6 -> Input capture with `TIM3`
+PA0 -> 434 output with `TIM14`
+PA7 -> WS2815 dataline `TIM17_CH1`
+
+
 
 
 # Frequencies:

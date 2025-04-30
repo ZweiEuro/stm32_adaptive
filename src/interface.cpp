@@ -8,6 +8,8 @@
 #include "storage/flash.hpp"
 #include "sys/printf_getchar.hpp"
 
+#include "features/ws28xx.hpp"
+
 namespace interface
 {
 
@@ -70,16 +72,7 @@ namespace interface
             break;
 
         case C_DEV_TEST: // 'a'
-
-            printf("sizeof: %d\n", sizeof(PeriodPattern));
-            for (int i = 0;; i++)
-            {
-                auto p = flash::getPattern(i);
-                printf("%p\n", p);
-                if (p == nullptr)
-                    break;
-                p->print();
-            }
+            ws2815::test();
             break;
 
         case C_TEST:
