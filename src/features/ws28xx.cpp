@@ -8,10 +8,20 @@ namespace ws2815
 {
     uint8_t led_dma_timing_buffer[24 + 1] = {0};
 
+    uint8_t led_dma_timing_buffer_OFF[24 + 1] = {0};
+    uint8_t led_dma_timing_buffer_ON[24 + 1] = {0};
+
     const auto PIN_PA7_Pos = (1 << 7);
 
-    void
-    setup_PWM()
+#define WAIT_LED_STRIP_IDLE         \
+    {                               \
+        while (strip_state != IDLE) \
+        {                           \
+            util::delay_ms(1);      \
+        }                           \
+    }
+
+    void setup_PWM()
     {
 
         BOOL_GATE;
@@ -52,6 +62,9 @@ namespace ws2815
     {
 
         BOOL_GATE;
+
+        memset(led_dma_timing_buffer_OFF, 2, 24);
+        memset(led_dma_timing_buffer_ON, 9, 24);
 
         /* The following example is given for the ADC. It can be easily ported on
          any peripheral supporting DMA transfer taking of the associated channel
@@ -101,55 +114,109 @@ namespace ws2815
         NVIC_SetPriority(DMA1_Channel1_IRQn, 0); /* (2) */
     }
 
+    /**
+     * Period = 1500ns
+     *
+     * 0 Code:
+     * CCR1 = 2
+     * - 280ns
+     * - 1220 ns
+     *
+     * 1 Code:
+     * CCR1 = 9
+     * - 1150 ns high
+     * - 350 ns low
+     *
+     */
+
+    enum ws2811_state
+    {
+        IDLE,
+        TURNING_ALL_OFF,
+        TURNING_ALL_ON,
+    };
+
+    const uint8_t LED_MAX_COUNT = 100;
+
+    uint8_t turning_all_off_counter = 0;
+    uint8_t turning_all_on_counter = 0;
+
+    volatile ws2811_state strip_state = IDLE;
+
+    void strip_do(ws2811_state new_state)
+    {
+
+        // check if idle, wait if not
+        if (strip_state != IDLE)
+        {
+            printf("[Err] Strip busy");
+
+            WAIT_LED_STRIP_IDLE;
+        }
+
+        // switch according to what state we want to be in now
+
+        strip_state = new_state;
+
+        DMA1_Channel1->CNDTR = 25; // next will write 24 bits for sure
+
+        switch (strip_state)
+        {
+        case IDLE:
+            break;
+
+        case TURNING_ALL_OFF:
+            turning_all_off_counter = 0;
+            DMA1_Channel1->CMAR = (uint32_t)(led_dma_timing_buffer_OFF);
+            break;
+        case TURNING_ALL_ON:
+            turning_all_on_counter = 0;
+            DMA1_Channel1->CMAR = (uint32_t)(led_dma_timing_buffer_ON);
+
+            break;
+
+        default:
+
+            printf("[Err] unknown state");
+            break;
+        }
+
+        SET_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);
+
+        WAIT_LED_STRIP_IDLE;
+    }
+
     void test()
     {
         printf("WS2815 test\n");
         setup_PWM();
         setup_dma();
 
-        PRINT_REG(DMA1_Channel1->CCR);
+        static int counter = 0;
 
-        memset(led_dma_timing_buffer, 9, 24);
-
-        /**
-         * Period = 1500ns
-         *
-         * 0 Code:
-         * CCR1 = 2
-         * - 280ns
-         * - 1220 ns
-         *
-         * 1 Code:
-         * CCR1 = 9
-         * - 1150 ns high
-         * - 350 ns low
-         *
-         */
-
-        printf_arrln("%X", led_dma_timing_buffer, 25);
-
-        DMA1_Channel1->CNDTR = 25;
-        SET_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);
-
-        return;
-        while (true)
+        if (counter % 2 == 0)
         {
-            DMA1_Channel1->CNDTR = 25;
-            SET_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);
 
-            while (READ_BIT(DMA1_Channel1->CCR, DMA_CCR_EN))
-            {
-                ;
-            }
+            printf("off\n");
 
-            util::delay_ms(1);
+            strip_do(TURNING_ALL_OFF);
         }
+
+        if (counter % 2 == 1)
+        {
+            printf("on\n");
+
+            strip_do(TURNING_ALL_ON);
+        }
+
+        counter++;
     }
 
 #ifdef __cplusplus
     extern "C"
     {
 #endif
+
         void DMA1_Channel1_IRQHandler(void)
         {
             // clear the interrupt bits:
@@ -157,12 +224,50 @@ namespace ws2815
             if (READ_BIT(DMA1->ISR, DMA_ISR_TCIF1))
             {
                 CLEAR_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);
+                SET_BIT(DMA1->IFCR, DMA_IFCR_CGIF1);
+
+                switch (strip_state)
+                {
+                case TURNING_ALL_OFF:
+
+                    if (turning_all_off_counter < (LED_MAX_COUNT - 1))
+                    {
+                        turning_all_off_counter++;
+                    }
+                    else
+                    {
+                        printf("done off");
+                        strip_state = IDLE;
+                        return;
+                    }
+
+                    break;
+
+                case TURNING_ALL_ON:
+                    if (turning_all_on_counter < (LED_MAX_COUNT - 1))
+                    {
+                        turning_all_on_counter++;
+                    }
+                    else
+                    {
+
+                        printf("done on");
+
+                        strip_state = IDLE;
+                        return;
+                    }
+                    break;
+
+                default:
+                    break;
+                }
+                DMA1_Channel1->CNDTR = 25;
+                SET_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);
             }
             else
             {
                 PRINT_REG(DMA1->ISR);
             }
-            SET_BIT(DMA1->IFCR, DMA_IFCR_CGIF1);
         }
 #ifdef __cplusplus
     }
