@@ -67,6 +67,7 @@ namespace ws2815
         CODE_1_CCR,
         CODE_1_CCR,
         CODE_1_CCR,
+
         CODE_1_CCR,
         CODE_1_CCR,
         CODE_1_CCR,
@@ -75,6 +76,7 @@ namespace ws2815
         CODE_1_CCR,
         CODE_1_CCR,
         CODE_1_CCR,
+        
         CODE_1_CCR,
         CODE_1_CCR,
         CODE_1_CCR,
@@ -197,7 +199,7 @@ namespace ws2815
         SET_TO_SINGLE_COLOR,
     };
 
-    const uint8_t LED_MAX_COUNT = 150;
+    const uint8_t LED_MAX_COUNT = 5;
 
     volatile ws2811_state strip_state = IDLE;
     volatile bool START = false;
@@ -222,6 +224,11 @@ namespace ws2815
                     led_index = 0;
                     START = false;
                 }
+                else
+                {
+                    // when starting, the 0th one needs to still be sent
+                    led_index++;
+                }
 
                 CLEAR_BIT(DMA1_Channel1->CCR, DMA_CCR_EN); // disable so we can change settings
                 DMA1_Channel1->CNDTR = 25;                 // ready for next LED information
@@ -243,7 +250,6 @@ namespace ws2815
                     break;
                 }
 
-                led_index++;
                 SET_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);
             }
             else
