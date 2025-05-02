@@ -18,7 +18,10 @@ namespace ws2815
     }
 
     /**
+     * On 8 Mhz;
+     * TIM->ARR = 12-1
      * Period = 1500ns
+     * 1 'part' = = 1.5us / 12 = 125ns
      *
      * 0 Code:
      * CCR1 = 2
@@ -30,38 +33,53 @@ namespace ws2815
      * - 1150 ns high
      * - 350 ns low
      *
+     * Problem: period and switch time rival DMA transfer speeds, very bad idea
+     *
+     * --------
+     *
+     * On 32Mhz:
+     * TIM->ARR = 48-1
+     * Period = 1500ns
+     * 1 'part' = = 1.5us / 48 = 312.5ps
+     *
+     * 0 Code:
+     * CCR1 = 8  -> high time = 250  ns
+     *
+     * 1 Code:
+     * CCR1 = 36 -> high time = 1125 ns
+     *
      */
 
-    const uint8_t CODE_0_CCR = 2;
-    const uint8_t CODE_1_CCR = 9;
+    const uint8_t CODE_0_CCR = 2 * (F_CPU / 8000000);
+    const uint8_t CODE_1_CCR = 9 * (F_CPU / 8000000);
 
     uint8_t dma_buffer_single_color[24 + 1] = {
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
 
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
 
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
         0
 
     };
@@ -151,7 +169,7 @@ namespace ws2815
 
         //// no prescaler, 72MHz clock
         TIM17->PSC = 0;
-        TIM17->ARR = 12 - 1; // ARR / 8Mhz = 850ns -> ARR = 8Mhz * 850ns
+        TIM17->ARR = (12 * (F_CPU / 8000000)) - 1;
 
         TIM17->CCR1 = 0; // initial preload value
 
@@ -232,7 +250,7 @@ namespace ws2815
         SET_TO_SINGLE_COLOR,
     };
 
-    const uint8_t LED_MAX_COUNT = 5;
+    const uint8_t LED_MAX_COUNT = 150; // 150
 
     volatile ws2811_state strip_state = IDLE;
     volatile bool START = false;
@@ -241,8 +259,6 @@ namespace ws2815
     extern "C"
     {
 #endif
-
-#define RESET_TIM_ON_TRANSFER 0
 
         void DMA1_Channel1_IRQHandler(void)
         {
@@ -264,15 +280,8 @@ namespace ws2815
 
                 static volatile uint8_t led_index = 0;
 
-                // reset the timer unit
-#if RESET_TIM_ON_TRANSFER
-                CLEAR_BIT(TIM17->CR1, TIM_CR1_CEN);
-                TIM17->CNT = 0;
-#endif
-
                 if (START)
                 {
-                    printf("starting\n");
                     led_index = 0;
                     START = false;
                 }
@@ -287,7 +296,6 @@ namespace ws2815
 
                 if (led_index >= LED_MAX_COUNT)
                 {
-                    printf("strip done\n");
                     strip_state = IDLE;
                     return; // we are done!
                 }
@@ -303,10 +311,6 @@ namespace ws2815
                 }
 
                 SET_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);
-
-#if RESET_TIM_ON_TRANSFER
-                SET_BIT(TIM17->CR1, TIM_CR1_CEN);
-#endif
             }
         }
 #ifdef __cplusplus
@@ -340,24 +344,27 @@ namespace ws2815
 
         static int counter = 0;
 
-        if (counter % 2 == 0)
+        while (true)
         {
 
-            printf("off\n");
+            if (counter % 2 == 0)
+            {
 
-            // memset(dma_buffer_single_color, CODE_0_CCR, values_per_led);
+                memset(dma_buffer_single_color, CODE_0_CCR, values_per_led);
 
-            strip_do(SET_TO_SINGLE_COLOR);
+                strip_do(SET_TO_SINGLE_COLOR);
+            }
+
+            if (counter % 2 == 1)
+            {
+                memset(dma_buffer_single_color, CODE_1_CCR, values_per_led);
+                strip_do(SET_TO_SINGLE_COLOR);
+            }
+
+            counter++;
+
+            util::delay_ms(100);
         }
-
-        if (counter % 2 == 1)
-        {
-            printf("on\n");
-            // memset(dma_buffer_single_color, CODE_1_CCR, values_per_led);
-            strip_do(SET_TO_SINGLE_COLOR);
-        }
-
-        counter++;
     }
 
 }
