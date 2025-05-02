@@ -35,6 +35,12 @@ int main(void)
 
   printf("Hello world!\n");
 
+  while (true)
+  {
+    util::toggle_onboard();
+    util::delay_ms(500);
+  }
+
   sender::setup();
 
   ic::init_ic();
