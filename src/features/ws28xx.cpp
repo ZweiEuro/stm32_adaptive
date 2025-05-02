@@ -9,6 +9,14 @@
 namespace ws2815
 {
 
+#define WAIT_LED_STRIP_IDLE         \
+    {                               \
+        while (strip_state != IDLE) \
+        {                           \
+            util::delay_ms(1);      \
+        }                           \
+    }
+
     /**
      * Period = 1500ns
      *
@@ -28,6 +36,9 @@ namespace ws2815
     const uint8_t CODE_1_CCR = 9;
 
     uint8_t dma_buffer_single_color[24 + 1] = {0};
+
+    const auto dma_values_per_led = sizeof(dma_buffer_single_color);
+    const auto values_per_led = sizeof(dma_buffer_single_color) - 1;
 
     const uint8_t led_dma_timing_buffer_OFF[24 + 1] = {
         CODE_0_CCR,
@@ -76,7 +87,7 @@ namespace ws2815
         CODE_1_CCR,
         CODE_1_CCR,
         CODE_1_CCR,
-        
+
         CODE_1_CCR,
         CODE_1_CCR,
         CODE_1_CCR,
@@ -88,14 +99,6 @@ namespace ws2815
         0};
 
     const auto PIN_PA7_Pos = (1 << 7);
-
-#define WAIT_LED_STRIP_IDLE         \
-    {                               \
-        while (strip_state != IDLE) \
-        {                           \
-            util::delay_ms(1);      \
-        }                           \
-    }
 
     inline void setup_PWM()
     {
@@ -199,7 +202,7 @@ namespace ws2815
         SET_TO_SINGLE_COLOR,
     };
 
-    const uint8_t LED_MAX_COUNT = 5;
+    const uint8_t LED_MAX_COUNT = 100;
 
     volatile ws2811_state strip_state = IDLE;
     volatile bool START = false;
@@ -218,6 +221,10 @@ namespace ws2815
                 SET_BIT(DMA1->IFCR, DMA_IFCR_CGIF1); // clear status bit
                 static volatile uint8_t led_index = 0;
 
+                // reset the timer unit
+                CLEAR_BIT(TIM17->CR1, TIM_CR1_CEN);
+                TIM17->CNT = 0;
+
                 if (START)
                 {
                     printf("starting\n");
@@ -231,7 +238,7 @@ namespace ws2815
                 }
 
                 CLEAR_BIT(DMA1_Channel1->CCR, DMA_CCR_EN); // disable so we can change settings
-                DMA1_Channel1->CNDTR = 25;                 // ready for next LED information
+                DMA1_Channel1->CNDTR = dma_values_per_led; // ready for next LED information
 
                 if (led_index >= LED_MAX_COUNT)
                 {
@@ -250,6 +257,7 @@ namespace ws2815
                     break;
                 }
 
+                SET_BIT(TIM17->CR1, TIM_CR1_CEN);
                 SET_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);
             }
             else
@@ -293,7 +301,7 @@ namespace ws2815
 
             printf("off\n");
 
-            memset(dma_buffer_single_color, CODE_0_CCR, 24);
+            memset(dma_buffer_single_color, CODE_0_CCR, values_per_led);
 
             strip_do(SET_TO_SINGLE_COLOR);
         }
@@ -301,7 +309,7 @@ namespace ws2815
         if (counter % 2 == 1)
         {
             printf("on\n");
-            memset(dma_buffer_single_color, CODE_1_CCR, 24);
+            memset(dma_buffer_single_color, CODE_1_CCR, values_per_led);
             strip_do(SET_TO_SINGLE_COLOR);
         }
 
