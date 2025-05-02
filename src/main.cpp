@@ -13,6 +13,12 @@
 
 #include "interface.hpp"
 
+#include "main.hpp"
+
+#ifdef FEATURE_WS2815_STRIP_ENABLED
+#include "features/ws28xx.hpp"
+#endif
+
 // Alternates blue and green LEDs quickly
 int main(void)
 {
@@ -21,6 +27,11 @@ int main(void)
   rcc::RCC_init();
 
   usart::init(9600);
+
+#ifdef FEATURE_WS2815_STRIP_ENABLED
+  ws2815::init();
+
+#endif
 
   printf("Hello world!\n");
 

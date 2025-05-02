@@ -1,6 +1,3 @@
 #include "input_capture.hpp"
 
-namespace global
-{
-
-}
+#define FEATURE_WS2815_STRIP_ENABLED 1
