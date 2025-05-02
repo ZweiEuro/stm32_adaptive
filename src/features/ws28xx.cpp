@@ -35,7 +35,36 @@ namespace ws2815
     const uint8_t CODE_0_CCR = 2;
     const uint8_t CODE_1_CCR = 9;
 
-    uint8_t dma_buffer_single_color[24 + 1] = {0};
+    uint8_t dma_buffer_single_color[24 + 1] = {
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        0
+
+    };
 
     const auto dma_values_per_led = sizeof(dma_buffer_single_color);
     const auto values_per_led = sizeof(dma_buffer_single_color) - 1;
@@ -110,6 +139,7 @@ namespace ws2815
 
         // PA7 into alternate function mode
         GPIOA->MODER |= (0b10 << GPIO_MODER_MODER7_Pos);
+        GPIOA->OSPEEDR |= (0b11 << GPIO_MODER_MODER7_Pos); // high speed
 
         GPIOA->ODR |= (PIN_PA7_Pos);
 
@@ -212,7 +242,7 @@ namespace ws2815
     {
 #endif
 
-#define RESET_TIM_ON_TRANSFER 1
+#define RESET_TIM_ON_TRANSFER 0
 
         void DMA1_Channel1_IRQHandler(void)
         {
@@ -315,7 +345,7 @@ namespace ws2815
 
             printf("off\n");
 
-            memset(dma_buffer_single_color, CODE_0_CCR, values_per_led);
+            // memset(dma_buffer_single_color, CODE_0_CCR, values_per_led);
 
             strip_do(SET_TO_SINGLE_COLOR);
         }
@@ -323,7 +353,7 @@ namespace ws2815
         if (counter % 2 == 1)
         {
             printf("on\n");
-            memset(dma_buffer_single_color, CODE_1_CCR, values_per_led);
+            // memset(dma_buffer_single_color, CODE_1_CCR, values_per_led);
             strip_do(SET_TO_SINGLE_COLOR);
         }
 
