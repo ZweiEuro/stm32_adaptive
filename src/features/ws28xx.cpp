@@ -202,7 +202,7 @@ namespace ws2815
         SET_TO_SINGLE_COLOR,
     };
 
-    const uint8_t LED_MAX_COUNT = 100;
+    const uint8_t LED_MAX_COUNT = 5;
 
     volatile ws2811_state strip_state = IDLE;
     volatile bool START = false;
@@ -212,18 +212,33 @@ namespace ws2815
     {
 #endif
 
+#define RESET_TIM_ON_TRANSFER 1
+
         void DMA1_Channel1_IRQHandler(void)
         {
+
+            const auto DMA_ISR = DMA1->ISR;
+            SET_BIT(DMA1->IFCR, DMA_IFCR_CGIF1); // clear status bit
+
+            if (READ_BIT(DMA_ISR, DMA_ISR_TEIF1))
+            {
+                printf("[Err] DMA transfer error!\n");
+                return;
+            }
+
             // clear the interrupt bits:
 
-            if (READ_BIT(DMA1->ISR, DMA_ISR_TCIF1) || START == true)
+            if (READ_BIT(DMA_ISR, DMA_ISR_TCIF1) || START == true)
             {
-                SET_BIT(DMA1->IFCR, DMA_IFCR_CGIF1); // clear status bit
+                util::toggle_onboard();
+
                 static volatile uint8_t led_index = 0;
 
                 // reset the timer unit
+#if RESET_TIM_ON_TRANSFER
                 CLEAR_BIT(TIM17->CR1, TIM_CR1_CEN);
                 TIM17->CNT = 0;
+#endif
 
                 if (START)
                 {
@@ -257,12 +272,11 @@ namespace ws2815
                     break;
                 }
 
-                SET_BIT(TIM17->CR1, TIM_CR1_CEN);
                 SET_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);
-            }
-            else
-            {
-                PRINT_REG(DMA1->ISR);
+
+#if RESET_TIM_ON_TRANSFER
+                SET_BIT(TIM17->CR1, TIM_CR1_CEN);
+#endif
             }
         }
 #ifdef __cplusplus
