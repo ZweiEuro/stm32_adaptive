@@ -16,9 +16,9 @@ namespace interface
         C_SETUP,
         C_START = 's', // start input capture
         C_HALT = 'h',  // halt input capture
-        C_FLUSH = 'f', // print out all the "found" things
         C_TEST = 't',  // send hard-coded test signal
         C_DEV_TEST = 'a',
+        C_FADE_TO_COLOR = 'f', // print out all the "found" things
 
         // END
         M_MAX

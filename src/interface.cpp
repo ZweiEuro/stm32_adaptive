@@ -15,6 +15,15 @@ namespace interface
 
     std::queue<uint8_t> found_indices;
 
+    inline bool eat_whitespace()
+    {
+        if (char_available() == false || getchar() != ' ')
+        {
+            return false;
+        }
+        return true;
+    }
+
     void handle_usart(void)
     {
         if (char_available() == false)
@@ -59,16 +68,6 @@ namespace interface
         case C_HALT:
             ic::disable_ic();
             printf("ic disable");
-            break;
-        case C_FLUSH:
-            printf("found indices:\n");
-            while (found_indices.empty() == false)
-            {
-                printf("%d ", found_indices.front());
-                found_indices.pop();
-            }
-            printf("\n");
-
             break;
 
         case C_DEV_TEST: // 'a'
@@ -123,6 +122,50 @@ namespace interface
             }
 
             toggle != toggle;
+        }
+        break;
+
+        case C_FADE_TO_COLOR:
+        { // scan in "f 0xFF 0xFF 0xFF 10000" to fade to white in 1 second
+            // only allowed time values between 00000 and 99999 ( 5 symbols everytime )
+
+            printf("fade subcommand:");
+            char command_buffer[sizeof("0xFF 0xFF 0xFF 10000")] = {0};
+
+            // scan in the entire command
+            for (auto i = 0; i < sizeof(command_buffer) - 1; i++)
+            {
+                command_buffer[i] = getchar();
+
+                printf("%c", command_buffer[i]);
+                if (command_buffer[i] == 0x8)
+                {
+                    i = i - 2; // the continue will add 1 back to the total
+                    continue;
+                }
+            }
+            printf("\n");
+            // printf("entire command:  %s\n", command_buffer);
+
+            ws2815::Color color;
+
+            // get first part
+            char *token = strtok(command_buffer, " ");
+            color._color[0] = strtol(token, NULL, 0);
+            token = strtok(NULL, " ");
+            color._color[1] = strtol(token, NULL, 0);
+            token = strtok(NULL, " ");
+            color._color[2] = strtol(token, NULL, 0);
+
+            // fade time
+            token = strtok(NULL, " ");
+            auto fade_time = strtol(token, NULL, 10);
+
+            // printf("%d", fade_time);
+
+            ws2815::fade_to_color(color, fade_time);
+
+            return;
         }
         break;
 

@@ -31,6 +31,11 @@ namespace usart
          */
         unsigned char _getchar(void);
 
+        /**
+         * Clear out all characters that are waiting on input line
+         */
+        void flush_input(void);
+
 #ifdef __cplusplus
     }
 #endif

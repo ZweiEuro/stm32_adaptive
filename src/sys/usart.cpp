@@ -50,6 +50,15 @@ namespace usart
     {
 #endif
 
+        void flush_input()
+        {
+
+            while (char_available())
+            {
+                _getchar();
+            }
+        }
+
         bool char_available(void)
         {
             return input_queue.empty() == false;

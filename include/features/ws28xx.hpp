@@ -6,16 +6,24 @@ namespace ws2815
     class Color
     {
     public:
-        uint8_t r, g, b;
+        uint8_t _color[3] = {0, 0, 0};
 
-    public:
-        Color(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b) {}
-        Color() : r(0), g(0), b(0) {}
+        Color(uint8_t r, uint8_t g, uint8_t b)
+        {
+            _color[0] = r;
+            _color[1] = g;
+            _color[2] = b;
+        }
+        Color() {}
 
         void print() const
         {
-            printf("%X %X %X\n", r, g, b);
+            printf("0x%X 0x%X 0x%X", _color[0], _color[1], _color[2]);
         }
+
+        uint8_t r() const { return _color[0]; }
+        uint8_t g() const { return _color[1]; }
+        uint8_t b() const { return _color[2]; }
     };
 
     /**
@@ -117,41 +125,8 @@ namespace ws2815
 
 #define LED_MAX_COUNT 1
 
-    class WS2815
-    {
-    public:
-        enum _states
-        {
-            IDLE,
-            ABORTING,
-
-            // Functionality
-            TO_COLOR,
-        };
-
-    public: // public so the ISR can see them
-        _states _current_state = _states::IDLE;
-        _states _state_buffer = _states::IDLE;
-
-        uint8_t _dma_buffer_all_leds[24 + 1] = {0};
-        Color _current_color_all_leds = Color(0, 0, 0);
-
-        // command start systick
-        uint64_t _command_start_systick = 0;
-        int _led_index = 0;
-
-    public:
-        // TO_COLOR
-        Color target_color;
-
-        // FADE_TO_COLOR
-        uint32_t fade_time = 1000; // color fade time
-
-        void to_state(_states new_state);
-
-        WS2815();
-    };
-
+    // control from the outside
     void test();
 
+    void fade_to_color(const Color &c, const uint32_t fade_time = 1000);
 }

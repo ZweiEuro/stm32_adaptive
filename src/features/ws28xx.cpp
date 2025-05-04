@@ -12,6 +12,42 @@ using namespace math;
 namespace ws2815
 {
 
+    // internal control class
+    class WS2815
+    {
+    public:
+        enum _states
+        {
+            IDLE,
+            ABORTING,
+
+            // Functionality
+            TO_COLOR,
+        };
+
+    public: // public so the ISR can see them
+        _states _current_state = _states::IDLE;
+        _states _state_buffer = _states::IDLE;
+
+        uint8_t _dma_buffer_all_leds[24 + 1] = {0};
+        Color _current_color_all_leds = Color(0, 0, 0);
+
+        // command start systick
+        uint64_t _command_start_systick = 0;
+        int _led_index = 0;
+
+    public:
+        // TO_COLOR
+        Color target_color;
+
+        // FADE_TO_COLOR
+        uint32_t fade_time = 1000; // color fade time
+
+        void to_state(_states new_state);
+
+        WS2815();
+    };
+
 #define WAIT_LED_STRIP_IDLE         \
     {                               \
         while (strip_state != IDLE) \
@@ -22,13 +58,16 @@ namespace ws2815
 
     static WS2815 ws2815;
 
-    void set_dma_timings_for_color(uint8_t *dma_buffer, const Color color)
+    void set_dma_timings_for_color(uint8_t *dma_buffer, const Color &color)
     {
         // color needs to be send out with G R B
         // HIGH bit first!
+
+        // TODO: this can be cleaned up to save cycles!
+        // make a function to move the rgb values into a uint8_t[3] array and then the write can happen linearly
         for (int i = 0; i < 8; i++)
         {
-            if (color.g & (1 << i))
+            if (color.g() & (1 << i))
             {
                 dma_buffer[7 - i] = CODE_1_CCR;
             }
@@ -40,7 +79,7 @@ namespace ws2815
 
         for (int i = 0; i < 8; i++)
         {
-            if (color.r & (1 << i))
+            if (color.r() & (1 << i))
             {
                 dma_buffer[(7 - i) + 8] = CODE_1_CCR;
             }
@@ -52,7 +91,7 @@ namespace ws2815
 
         for (int i = 0; i < 8; i++)
         {
-            if (color.b & (1 << i))
+            if (color.b() & (1 << i))
             {
                 dma_buffer[(7 - i) + 16] = CODE_1_CCR;
             }
@@ -272,5 +311,14 @@ namespace ws2815
             _current_state = ABORTING;
             // it should start up as soon as it can
         }
+    }
+
+    void fade_to_color(const Color &c, const uint32_t fade_time)
+    {
+
+        printf("fade to color ");
+        c.print();
+
+        printf(" in %lu ms\n", fade_time);
     }
 }

@@ -50,6 +50,8 @@ extern "C"
 
     bool char_available(void);
 
+    void flush_input(void);
+
 #define getchar _getchar
     /**
      * Get the next char from the a custom device like UART.
