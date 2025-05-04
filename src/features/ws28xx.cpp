@@ -25,16 +25,16 @@ namespace ws2815
     void set_dma_timings_for_color(uint8_t *dma_buffer, const Color color)
     {
         // color needs to be send out with G R B
-
+        // HIGH bit first!
         for (int i = 0; i < 8; i++)
         {
             if (color.g & (1 << i))
             {
-                dma_buffer[i] = CODE_1_CCR;
+                dma_buffer[7 - i] = CODE_1_CCR;
             }
             else
             {
-                dma_buffer[i] = CODE_0_CCR;
+                dma_buffer[7 - i] = CODE_0_CCR;
             }
         }
 
@@ -42,11 +42,11 @@ namespace ws2815
         {
             if (color.r & (1 << i))
             {
-                dma_buffer[i + 8] = CODE_1_CCR;
+                dma_buffer[(7 - i) + 8] = CODE_1_CCR;
             }
             else
             {
-                dma_buffer[i + 8] = CODE_0_CCR;
+                dma_buffer[(7 - i) + +8] = CODE_0_CCR;
             }
         }
 
@@ -54,11 +54,11 @@ namespace ws2815
         {
             if (color.b & (1 << i))
             {
-                dma_buffer[i + 16] = CODE_1_CCR;
+                dma_buffer[(7 - i) + 16] = CODE_1_CCR;
             }
             else
             {
-                dma_buffer[i + 16] = CODE_0_CCR;
+                dma_buffer[(7 - i) + 16] = CODE_0_CCR;
             }
         }
     }
@@ -207,12 +207,12 @@ namespace ws2815
 
                         DMA1_Channel1->CMAR = (uint32_t)(ws2815._dma_buffer_all_leds);
 
-                        set_dma_timings_for_color(ws2815._dma_buffer_all_leds, ws2815.fade_target_color);
+                        set_dma_timings_for_color(ws2815._dma_buffer_all_leds, ws2815.target_color);
                     }
                     else if (ws2815._led_index >= LED_MAX_COUNT)
                     {
                         ws2815._current_state = WS2815::IDLE;
-                        ws2815._current_color_all_leds = ws2815.fade_target_color;
+                        ws2815._current_color_all_leds = ws2815.target_color;
                         printf("Done \n");
                         return;
                     }
@@ -239,12 +239,12 @@ namespace ws2815
 
         if (counter % 2 == 0)
         {
-            ws2815.fade_target_color = Color(0xFF, 0, 0);
+            ws2815.target_color = Color(0x01, 0, 0);
         }
 
         if (counter % 2 == 1)
         {
-            ws2815.fade_target_color = Color{0, 0, 0x00};
+            ws2815.target_color = Color{0, 0, 0x00};
         }
 
         ws2815.to_state(WS2815::TO_COLOR);

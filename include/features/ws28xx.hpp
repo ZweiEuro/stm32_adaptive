@@ -115,7 +115,7 @@ namespace ws2815
     // pin that produces the pwm signal
 #define PIN_PA7_Pos (1 << 7);
 
-#define LED_MAX_COUNT 10
+#define LED_MAX_COUNT 1
 
     class WS2815
     {
@@ -141,8 +141,11 @@ namespace ws2815
         int _led_index = 0;
 
     public:
+        // TO_COLOR
+        Color target_color;
+
+        // FADE_TO_COLOR
         uint32_t fade_time = 1000; // color fade time
-        Color fade_target_color;
 
         void to_state(_states new_state);
 
