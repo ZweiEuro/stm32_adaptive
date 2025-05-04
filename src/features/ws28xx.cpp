@@ -5,6 +5,9 @@
 #include "util.hpp"
 
 #include "features/ws28xx.hpp"
+#include "features/math.hpp"
+
+using namespace math;
 
 namespace ws2815
 {
@@ -17,135 +20,51 @@ namespace ws2815
         }                           \
     }
 
-    /**
-     * On 8 Mhz;
-     * TIM->ARR = 12-1
-     * Period = 1500ns
-     * 1 'part' = = 1.5us / 12 = 125ns
-     *
-     * 0 Code:
-     * CCR1 = 2
-     * - 280ns
-     * - 1220 ns
-     *
-     * 1 Code:
-     * CCR1 = 9
-     * - 1150 ns high
-     * - 350 ns low
-     *
-     * Problem: period and switch time rival DMA transfer speeds, very bad idea
-     *
-     * --------
-     *
-     * On 32Mhz:
-     * TIM->ARR = 48-1
-     * Period = 1500ns
-     * 1 'part' = = 1.5us / 48 = 312.5ps
-     *
-     * 0 Code:
-     * CCR1 = 8  -> high time = 250  ns
-     *
-     * 1 Code:
-     * CCR1 = 36 -> high time = 1125 ns
-     *
-     */
+    static WS2815 ws2815;
 
-    const uint8_t CODE_0_CCR = 2 * (F_CPU / 8000000);
-    const uint8_t CODE_1_CCR = 9 * (F_CPU / 8000000);
+    void set_dma_timings_for_color(uint8_t *dma_buffer, const Color color)
+    {
+        // color needs to be send out with G R B
 
-    uint8_t dma_buffer_single_color[24 + 1] = {
-        21,
-        22,
-        23,
-        24,
-        25,
-        26,
-        27,
-        28,
-        29,
+        for (int i = 0; i < 8; i++)
+        {
+            if (color.g & (1 << i))
+            {
+                dma_buffer[i] = CODE_1_CCR;
+            }
+            else
+            {
+                dma_buffer[i] = CODE_0_CCR;
+            }
+        }
 
-        21,
-        22,
-        23,
-        24,
-        25,
-        26,
-        27,
-        28,
-        29,
+        for (int i = 0; i < 8; i++)
+        {
+            if (color.r & (1 << i))
+            {
+                dma_buffer[i + 8] = CODE_1_CCR;
+            }
+            else
+            {
+                dma_buffer[i + 8] = CODE_0_CCR;
+            }
+        }
 
-        21,
-        22,
-        23,
-        24,
-        25,
-        26,
-        0
+        for (int i = 0; i < 8; i++)
+        {
+            if (color.b & (1 << i))
+            {
+                dma_buffer[i + 16] = CODE_1_CCR;
+            }
+            else
+            {
+                dma_buffer[i + 16] = CODE_0_CCR;
+            }
+        }
+    }
 
-    };
-
-    const auto dma_values_per_led = sizeof(dma_buffer_single_color);
-    const auto values_per_led = sizeof(dma_buffer_single_color) - 1;
-
-    const uint8_t led_dma_timing_buffer_OFF[24 + 1] = {
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        CODE_0_CCR,
-        0};
-
-    const uint8_t led_dma_timing_buffer_WHITE[24 + 1] = {
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        0};
-
-    const auto PIN_PA7_Pos = (1 << 7);
+    const auto DMA_TRANSFERS_PER_LED = 25;
+    const auto DMA_BIT_VALUES_PER_LED = 24;
 
     inline void setup_PWM()
     {
@@ -159,7 +78,7 @@ namespace ws2815
         GPIOA->MODER |= (0b10 << GPIO_MODER_MODER7_Pos);
         GPIOA->OSPEEDR |= (0b11 << GPIO_MODER_MODER7_Pos); // high speed
 
-        GPIOA->ODR |= (PIN_PA7_Pos);
+        GPIOA->ODR |= PIN_PA7_Pos;
 
         // PA7 into alternate function 5 -> TIM17_CH1
         SET_BIT(GPIOA->AFR[0], 0b0101 << GPIO_AFRL_AFSEL7_Pos);
@@ -210,7 +129,7 @@ namespace ws2815
         DMA1_Channel1->CPAR = (uint32_t)(&(TIM17->CCR1)); /* (3) */
 
         // source address
-        DMA1_Channel1->CMAR = (uint32_t)(dma_buffer_single_color); /* (4) */
+        DMA1_Channel1->CMAR = (uint32_t)(0); // garbage pointer /* (4) */
 
         DMA1_Channel1->CNDTR = 25; /* (5) */
 
@@ -238,22 +157,11 @@ namespace ws2815
         NVIC_SetPriority(DMA1_Channel1_IRQn, 0); /* (2) */
     }
 
-    void init()
+    WS2815::WS2815()
     {
         setup_PWM();
         setup_dma();
     }
-
-    enum ws2811_state
-    {
-        IDLE,
-        SET_TO_SINGLE_COLOR,
-    };
-
-    const uint8_t LED_MAX_COUNT = 150; // 150
-
-    volatile ws2811_state strip_state = IDLE;
-    volatile bool START = false;
 
 #ifdef __cplusplus
     extern "C"
@@ -274,42 +182,48 @@ namespace ws2815
 
             // clear the interrupt bits:
 
-            if (READ_BIT(DMA_ISR, DMA_ISR_TCIF1) || START == true)
+            if (READ_BIT(DMA_ISR, DMA_ISR_TCIF1) || ws2815._current_state != WS2815::IDLE)
             {
+                if (ws2815._current_state == WS2815::ABORTING)
+                {
+                    ws2815._current_state = ws2815._state_buffer;
+                    ws2815._state_buffer = WS2815::IDLE;
+                    ws2815._led_index = 0;
+                }
+
                 util::toggle_onboard();
 
-                static volatile uint8_t led_index = 0;
+                CLEAR_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);    // disable so we can change settings
+                DMA1_Channel1->CNDTR = DMA_TRANSFERS_PER_LED; // ready for next LED information
 
-                if (START)
-                {
-                    led_index = 0;
-                    START = false;
-                }
-                else
-                {
-                    // when starting, the 0th one needs to still be sent
-                    led_index++;
-                }
+                // check abort conditions
 
-                CLEAR_BIT(DMA1_Channel1->CCR, DMA_CCR_EN); // disable so we can change settings
-                DMA1_Channel1->CNDTR = dma_values_per_led; // ready for next LED information
-
-                if (led_index >= LED_MAX_COUNT)
+                // run conditions
+                switch (ws2815._current_state)
                 {
-                    strip_state = IDLE;
-                    return; // we are done!
-                }
+                case WS2815::_states::TO_COLOR:
+                    if (ws2815._led_index == 0)
+                    {
 
-                switch (strip_state)
-                {
-                case SET_TO_SINGLE_COLOR:
-                    DMA1_Channel1->CMAR = (uint32_t)(dma_buffer_single_color);
+                        DMA1_Channel1->CMAR = (uint32_t)(ws2815._dma_buffer_all_leds);
+
+                        set_dma_timings_for_color(ws2815._dma_buffer_all_leds, ws2815.fade_target_color);
+                    }
+                    else if (ws2815._led_index >= LED_MAX_COUNT)
+                    {
+                        ws2815._current_state = WS2815::IDLE;
+                        ws2815._current_color_all_leds = ws2815.fade_target_color;
+                        printf("Done \n");
+                        return;
+                    }
+
                     break;
 
                 default:
                     break;
                 }
 
+                ws2815._led_index++;
                 SET_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);
             }
         }
@@ -317,54 +231,46 @@ namespace ws2815
     }
 #endif
 
-    void strip_do(ws2811_state new_state)
-    {
-
-        // check if idle, wait if not
-        if (strip_state != IDLE)
-        {
-            printf("[Err] Strip busy");
-
-            WAIT_LED_STRIP_IDLE;
-        }
-
-        // switch according to what state we want to be in now
-
-        strip_state = new_state;
-
-        START = true;
-
-        DMA1_Channel1_IRQHandler();
-        WAIT_LED_STRIP_IDLE;
-    }
-
     void test()
     {
         printf("WS2815 test\n");
 
         static int counter = 0;
 
-        while (true)
+        if (counter % 2 == 0)
         {
-
-            if (counter % 2 == 0)
-            {
-
-                memset(dma_buffer_single_color, CODE_0_CCR, values_per_led);
-
-                strip_do(SET_TO_SINGLE_COLOR);
-            }
-
-            if (counter % 2 == 1)
-            {
-                memset(dma_buffer_single_color, CODE_1_CCR, values_per_led);
-                strip_do(SET_TO_SINGLE_COLOR);
-            }
-
-            counter++;
-
-            util::delay_ms(100);
+            ws2815.fade_target_color = Color(0xFF, 0, 0);
         }
+
+        if (counter % 2 == 1)
+        {
+            ws2815.fade_target_color = Color{0, 0, 0x00};
+        }
+
+        ws2815.to_state(WS2815::TO_COLOR);
+        counter++;
     }
 
+    void WS2815::to_state(WS2815::_states new_state)
+    {
+        _command_start_systick = rcc::getSystick();
+
+        _led_index = 0;
+
+        if (_current_state == IDLE)
+        {
+            printf("Started new command \n");
+            // just do it and give it a kick
+            _current_state = new_state;
+            DMA1_Channel1_IRQHandler();
+        }
+        else
+        {
+            printf("command interrupted!\n");
+
+            _state_buffer = new_state;
+            _current_state = ABORTING;
+            // it should start up as soon as it can
+        }
+    }
 }

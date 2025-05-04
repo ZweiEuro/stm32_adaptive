@@ -28,11 +28,6 @@ int main(void)
 
   usart::init(9600);
 
-#ifdef FEATURE_WS2815_STRIP_ENABLED
-  ws2815::init();
-
-#endif
-
   printf("Hello world!\n");
 
   sender::setup();
