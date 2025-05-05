@@ -135,6 +135,10 @@ namespace ws2815
 #define LED_INDEX_RESET_SIGNAL LED_MAX_INDEX
 #define LED_INDEX_DONE LED_INDEX_RESET_SIGNAL + 1
 
+    const auto DMA_TRANSFERS_PER_LED = 25;
+    const auto DMA_TRANSFERS_RES_SIG = 180; // roughly estimated since its hard to actually calc with processing time
+    const auto DMA_BIT_VALUES_PER_LED = 24;
+
     // control from the outside
     void test();
 

@@ -107,9 +107,7 @@ namespace ws2815
         }
     }
 
-    const auto DMA_TRANSFERS_PER_LED = 25;
-    const auto DMA_TRANSFERS_RES_SIG = 193; //   290us / 1.5us
-    const auto DMA_BIT_VALUES_PER_LED = 24;
+
 
     inline void setup_PWM()
     {
