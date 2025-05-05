@@ -21,6 +21,11 @@ namespace ws2815
             printf("0x%X 0x%X 0x%X", _color[0], _color[1], _color[2]);
         }
 
+        void println() const
+        {
+            printf("0x%X 0x%X 0x%X\n", _color[0], _color[1], _color[2]);
+        }
+
         uint8_t r() const { return _color[0]; }
         uint8_t g() const { return _color[1]; }
         uint8_t b() const { return _color[2]; }
@@ -120,10 +125,15 @@ namespace ws2815
         CODE_1_CCR,
         0};
 
+    const uint8_t ZERO = 0;
+
     // pin that produces the pwm signal
 #define PIN_PA7_Pos (1 << 7);
 
-#define LED_MAX_COUNT 1
+#define LED_INDEX_START 0
+#define LED_MAX_INDEX 1
+#define LED_INDEX_RESET_SIGNAL LED_MAX_INDEX
+#define LED_INDEX_DONE LED_INDEX_RESET_SIGNAL + 1
 
     // control from the outside
     void test();

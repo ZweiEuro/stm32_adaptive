@@ -19,15 +19,17 @@ namespace ws2815
         enum _states
         {
             IDLE,
-            ABORTING,
 
             // Functionality
             TO_COLOR,
+            FADE_TO_COLOR,
         };
 
     public: // public so the ISR can see them
         _states _current_state = _states::IDLE;
-        _states _state_buffer = _states::IDLE;
+
+        // abort
+        bool _abort = false;
 
         uint8_t _dma_buffer_all_leds[24 + 1] = {0};
         Color _current_color_all_leds = Color(0, 0, 0);
@@ -41,19 +43,20 @@ namespace ws2815
         Color target_color;
 
         // FADE_TO_COLOR
-        uint32_t fade_time = 1000; // color fade time
+        uint64_t fade_time = 1000; // color fade time
+        Color fade_start_color;
 
         void to_state(_states new_state);
 
         WS2815();
     };
 
-#define WAIT_LED_STRIP_IDLE         \
-    {                               \
-        while (strip_state != IDLE) \
-        {                           \
-            util::delay_ms(1);      \
-        }                           \
+#define WAIT_LED_STRIP_IDLE                                    \
+    {                                                          \
+        while (ws2815._current_state != WS2815::_states::IDLE) \
+        {                                                      \
+            __ASM("nop");                                      \
+        }                                                      \
     }
 
     static WS2815 ws2815;
@@ -103,6 +106,7 @@ namespace ws2815
     }
 
     const auto DMA_TRANSFERS_PER_LED = 25;
+    const auto DMA_TRANSFERS_RES_SIG = 193; //   290us / 1.5us
     const auto DMA_BIT_VALUES_PER_LED = 24;
 
     inline void setup_PWM()
@@ -223,46 +227,97 @@ namespace ws2815
 
             if (READ_BIT(DMA_ISR, DMA_ISR_TCIF1) || ws2815._current_state != WS2815::IDLE)
             {
-                if (ws2815._current_state == WS2815::ABORTING)
-                {
-                    ws2815._current_state = ws2815._state_buffer;
-                    ws2815._state_buffer = WS2815::IDLE;
-                    ws2815._led_index = 0;
-                }
-
-                util::toggle_onboard();
 
                 CLEAR_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);    // disable so we can change settings
                 DMA1_Channel1->CNDTR = DMA_TRANSFERS_PER_LED; // ready for next LED information
 
-                // check abort conditions
+                if (ws2815._led_index == LED_INDEX_RESET_SIGNAL)
+                {
+                    // always send RESET after full set of data has been sent
+                    CLEAR_BIT(DMA1_Channel1->CCR, DMA_CCR_MINC);
+                    DMA1_Channel1->CNDTR = DMA_TRANSFERS_RES_SIG;
+                    DMA1_Channel1->CMAR = (uint32_t)(&ZERO);
+                    util::toggle_onboard();
+
+                    goto after_calc;
+                }
+
+                if (ws2815._led_index >= LED_INDEX_DONE)
+                {
+                    // this is always AFTER the reset has been sent, we can do more logic within the switch
+                    // but its important we turn on memory incrementing again!
+                    SET_BIT(DMA1_Channel1->CCR, DMA_CCR_MINC);
+                }
 
                 // run conditions
                 switch (ws2815._current_state)
                 {
                 case WS2815::_states::TO_COLOR:
-                    if (ws2815._led_index == 0)
+                {
+
+                    if (ws2815._led_index >= LED_INDEX_DONE)
                     {
 
-                        DMA1_Channel1->CMAR = (uint32_t)(ws2815._dma_buffer_all_leds);
-
-                        set_dma_timings_for_color(ws2815._dma_buffer_all_leds, ws2815.target_color);
-                    }
-                    else if (ws2815._led_index >= LED_MAX_COUNT)
-                    {
                         ws2815._current_state = WS2815::IDLE;
                         ws2815._current_color_all_leds = ws2815.target_color;
-                        printf("Done \n");
                         return;
                     }
 
-                    break;
+                    if (ws2815._led_index == LED_INDEX_START)
+                    {
+                        DMA1_Channel1->CMAR = (uint32_t)(ws2815._dma_buffer_all_leds);
+                        set_dma_timings_for_color(ws2815._dma_buffer_all_leds, ws2815.target_color);
+                    }
+                }
+                break;
+
+                case WS2815::_states::FADE_TO_COLOR:
+                {
+                    const uint64_t ms_since_start_shifted = (rcc::getSystick() - ws2815._command_start_systick) << 10;
+
+                    // percent fixed point 0 - 1024
+
+                    const uint64_t percent = (ms_since_start_shifted / ws2815.fade_time);
+
+                    // abort condition
+                    if (ws2815._led_index >= LED_INDEX_DONE)
+                    {
+                        ws2815._led_index = LED_INDEX_START;
+                        if (percent >= 1025 || ws2815._abort)
+                        {
+                            ws2815._current_state = WS2815::IDLE;
+                            return;
+                        }
+                    }
+
+                    if (ws2815._led_index == LED_INDEX_START)
+                    {
+
+                        auto next_color = Color(
+                            math::lerp(ws2815.fade_start_color.r(), ws2815.target_color.r(), percent),
+                            math::lerp(ws2815.fade_start_color.g(), ws2815.target_color.g(), percent),
+                            math::lerp(ws2815.fade_start_color.b(), ws2815.target_color.b(), percent));
+
+                        ws2815._current_color_all_leds = next_color;
+
+                        // calculate the color it should have now based on the diff
+
+                        DMA1_Channel1->CMAR = (uint32_t)(ws2815._dma_buffer_all_leds);
+
+                        set_dma_timings_for_color(ws2815._dma_buffer_all_leds, next_color);
+                    }
+                }
+                break;
 
                 default:
+                    printf("[Err] cannot process state for ws2815!\n");
                     break;
                 }
 
+            after_calc:
+
                 ws2815._led_index++;
+
                 SET_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);
             }
         }
@@ -276,17 +331,21 @@ namespace ws2815
 
         static int counter = 0;
 
-        if (counter % 2 == 0)
+        switch (counter % 3)
         {
-            ws2815.target_color = Color(0x01, 0, 0);
+        case 0:
+
+            fade_to_color(Color{0xFF, 0x00, 0x00}, 2000);
+            break;
+        case 1:
+            fade_to_color(Color{0x00, 0xFF, 0x00}, 2000);
+            break;
+
+        case 2:
+            fade_to_color(Color{0x00, 0x00, 0xFF}, 2000);
+            break;
         }
 
-        if (counter % 2 == 1)
-        {
-            ws2815.target_color = Color{0, 0, 0x00};
-        }
-
-        ws2815.to_state(WS2815::TO_COLOR);
         counter++;
     }
 
@@ -294,31 +353,34 @@ namespace ws2815
     {
         _command_start_systick = rcc::getSystick();
 
-        _led_index = 0;
+        _led_index = LED_INDEX_START;
 
-        if (_current_state == IDLE)
+        if (_current_state != IDLE)
         {
-            printf("Started new command \n");
-            // just do it and give it a kick
-            _current_state = new_state;
-            DMA1_Channel1_IRQHandler();
-        }
-        else
-        {
-            printf("command interrupted!\n");
 
-            _state_buffer = new_state;
-            _current_state = ABORTING;
-            // it should start up as soon as it can
+            _abort = true;
+            WAIT_LED_STRIP_IDLE;
+            ws2815._abort = false;
         }
+
+        _current_state = new_state;
+        DMA1_Channel1_IRQHandler();
     }
 
     void fade_to_color(const Color &c, const uint32_t fade_time)
     {
 
-        printf("fade to color ");
-        c.print();
+        ws2815.fade_time = fade_time;
+        ws2815.target_color = c;
+        ws2815.fade_start_color = ws2815._current_color_all_leds;
+        ws2815._led_index = LED_INDEX_START;
 
+        printf("fade to color ");
+        ws2815.target_color.print();
+        printf(" from ");
+        ws2815.fade_start_color.print();
         printf(" in %lu ms\n", fade_time);
+
+        ws2815.to_state(WS2815::_states::FADE_TO_COLOR);
     }
 }
