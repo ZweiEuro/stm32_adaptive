@@ -48,6 +48,8 @@ namespace ws2815
 
         void to_state(_states new_state);
 
+        void abort_if_running();
+
         WS2815();
     };
 
@@ -237,7 +239,6 @@ namespace ws2815
                     CLEAR_BIT(DMA1_Channel1->CCR, DMA_CCR_MINC);
                     DMA1_Channel1->CNDTR = DMA_TRANSFERS_RES_SIG;
                     DMA1_Channel1->CMAR = (uint32_t)(&ZERO);
-                    util::toggle_onboard();
 
                     goto after_calc;
                 }
@@ -285,6 +286,8 @@ namespace ws2815
                         ws2815._led_index = LED_INDEX_START;
                         if (percent >= 1025 || ws2815._abort)
                         {
+                            util::toggle_onboard();
+
                             ws2815._current_state = WS2815::IDLE;
                             return;
                         }
@@ -349,19 +352,22 @@ namespace ws2815
         counter++;
     }
 
-    void WS2815::to_state(WS2815::_states new_state)
+    void WS2815::abort_if_running()
     {
-        _command_start_systick = rcc::getSystick();
-
-        _led_index = LED_INDEX_START;
 
         if (_current_state != IDLE)
         {
 
             _abort = true;
             WAIT_LED_STRIP_IDLE;
-            ws2815._abort = false;
+            _abort = false;
         }
+    }
+    void WS2815::to_state(WS2815::_states new_state)
+    {
+        _command_start_systick = rcc::getSystick();
+
+        _led_index = LED_INDEX_START;
 
         _current_state = new_state;
         DMA1_Channel1_IRQHandler();
@@ -369,6 +375,7 @@ namespace ws2815
 
     void fade_to_color(const Color &c, const uint32_t fade_time)
     {
+        ws2815.abort_if_running();
 
         ws2815.fade_time = fade_time;
         ws2815.target_color = c;
