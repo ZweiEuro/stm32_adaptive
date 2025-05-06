@@ -67,7 +67,7 @@ namespace ws2815
     const uint8_t CODE_0_CCR = 2 * (F_CPU / 8000000);
     const uint8_t CODE_1_CCR = 9 * (F_CPU / 8000000);
 
-    const uint8_t led_dma_timing_buffer_OFF[24 + 1] = {
+    const uint8_t led_dma_timing_buffer_OFF[24] = {
         CODE_0_CCR,
         CODE_0_CCR,
         CODE_0_CCR,
@@ -93,19 +93,9 @@ namespace ws2815
         CODE_0_CCR,
         CODE_0_CCR,
         CODE_0_CCR,
-        CODE_0_CCR,
-        0};
+        CODE_0_CCR};
 
-    const uint8_t led_dma_timing_buffer_WHITE[24 + 1] = {
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-        CODE_1_CCR,
-
+    const uint8_t led_dma_timing_buffer_WHITE[24] = {
         CODE_1_CCR,
         CODE_1_CCR,
         CODE_1_CCR,
@@ -123,7 +113,15 @@ namespace ws2815
         CODE_1_CCR,
         CODE_1_CCR,
         CODE_1_CCR,
-        0};
+
+        CODE_1_CCR,
+        CODE_1_CCR,
+        CODE_1_CCR,
+        CODE_1_CCR,
+        CODE_1_CCR,
+        CODE_1_CCR,
+        CODE_1_CCR,
+        CODE_1_CCR};
 
     const uint8_t ZERO = 0;
 
@@ -131,16 +129,59 @@ namespace ws2815
 #define PIN_PA7_Pos (1 << 7);
 
 #define LED_INDEX_START 0
-#define LED_MAX_INDEX 10 // number of LEDs
+#define LED_MAX_INDEX 150 // number of LEDs
 #define LED_INDEX_RESET_SIGNAL LED_MAX_INDEX
 #define LED_INDEX_DONE LED_INDEX_RESET_SIGNAL + 1
 
-    const auto DMA_TRANSFERS_PER_LED = 25;
+    const auto DMA_TRANSFERS_PER_LED = sizeof(led_dma_timing_buffer_WHITE);
     const auto DMA_TRANSFERS_RES_SIG = 180; // roughly estimated since its hard to actually calc with processing time
     const auto DMA_BIT_VALUES_PER_LED = 24;
 
     // control from the outside
     void test();
 
-    void fade_to_color(const Color &c, const uint32_t fade_time = 1000);
+    // internal control class
+    class WS2815
+    {
+
+    public:
+        enum _commands
+        {
+            IDLE,
+            // Functionality
+            TO_COLOR,
+            FADE_TO_COLOR,
+        };
+
+        _commands current_cmd = _commands::IDLE;
+
+    public: // public so the ISR can see them
+            // the current DMA that is cycled to the LEDs
+        uint8_t _current_color_dma_buffer[24] = {0};
+        Color _current_color_all_leds = Color(0, 0, 0); // the current Color representation of the DMA buffer
+
+        // command start systick
+        uint64_t _command_start_systick = 0;
+
+    public:
+        // FADE_TO_COLOR
+        uint64_t fade_time = 1000; // color fade time
+        Color fade_start_color;
+        Color fade_target_color;
+
+        WS2815();
+
+        // set current color
+        void set_dma_timings_for_color(const Color &color);
+
+        // general control
+        void process();
+        void to_color(const Color &c);
+        void fade_to_color(const Color &c, const uint32_t fade_time = 1000);
+
+        bool busy() { return current_cmd != IDLE; }
+    };
+
+    extern WS2815 ws2815;
+
 }

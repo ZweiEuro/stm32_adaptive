@@ -37,6 +37,10 @@ int main(void)
   while (1)
   {
 
+#ifdef FEATURE_WS2815_STRIP_ENABLED
+    ws2815::ws2815.process();
+#endif
+
     interface::handle_usart();
 
     auto found = ic::process_signals();

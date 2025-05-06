@@ -11,7 +11,7 @@ namespace util
 
         while (delay_until > rcc::getSystick())
         {
-            ;
+            __WFI();
         }
     }
 

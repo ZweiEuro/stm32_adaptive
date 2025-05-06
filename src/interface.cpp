@@ -163,7 +163,7 @@ namespace interface
 
             // printf("%d", fade_time);
 
-            ws2815::fade_to_color(color, fade_time);
+            ws2815::ws2815.fade_to_color(color, fade_time);
 
             return;
         }
