@@ -131,7 +131,7 @@ namespace ws2815
 #define PIN_PA7_Pos (1 << 7);
 
 #define LED_INDEX_START 0
-#define LED_MAX_INDEX 1
+#define LED_MAX_INDEX 10 // number of LEDs
 #define LED_INDEX_RESET_SIGNAL LED_MAX_INDEX
 #define LED_INDEX_DONE LED_INDEX_RESET_SIGNAL + 1
 

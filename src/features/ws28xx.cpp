@@ -68,46 +68,19 @@ namespace ws2815
         // color needs to be send out with G R B
         // HIGH bit first!
 
-        // TODO: this can be cleaned up to save cycles!
-        // make a function to move the rgb values into a uint8_t[3] array and then the write can happen linearly
-        for (int i = 0; i < 8; i++)
-        {
-            if (color.g() & (1 << i))
-            {
-                dma_buffer[7 - i] = CODE_1_CCR;
-            }
-            else
-            {
-                dma_buffer[7 - i] = CODE_0_CCR;
-            }
-        }
+        uint8_t grb[] = {
+            color.g(),
+            color.r(),
+            color.b()};
 
-        for (int i = 0; i < 8; i++)
+        for (int byte = 0; byte < 3; byte++)
         {
-            if (color.r() & (1 << i))
+            for (int i = 0; i < 8; i++)
             {
-                dma_buffer[(7 - i) + 8] = CODE_1_CCR;
-            }
-            else
-            {
-                dma_buffer[(7 - i) + +8] = CODE_0_CCR;
-            }
-        }
-
-        for (int i = 0; i < 8; i++)
-        {
-            if (color.b() & (1 << i))
-            {
-                dma_buffer[(7 - i) + 16] = CODE_1_CCR;
-            }
-            else
-            {
-                dma_buffer[(7 - i) + 16] = CODE_0_CCR;
+                dma_buffer[(7 - i) + 8 * byte] = grb[byte] & (1 << i) ? CODE_1_CCR : CODE_0_CCR;
             }
         }
     }
-
-
 
     inline void setup_PWM()
     {
@@ -227,6 +200,7 @@ namespace ws2815
 
             if (READ_BIT(DMA_ISR, DMA_ISR_TCIF1) || ws2815._current_state != WS2815::IDLE)
             {
+                util::toggle_onboard();
 
                 CLEAR_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);    // disable so we can change settings
                 DMA1_Channel1->CNDTR = DMA_TRANSFERS_PER_LED; // ready for next LED information
@@ -272,19 +246,16 @@ namespace ws2815
 
                 case WS2815::_states::FADE_TO_COLOR:
                 {
-                    const uint64_t ms_since_start_shifted = (rcc::getSystick() - ws2815._command_start_systick) << 10;
-
-                    // percent fixed point 0 - 1024
-
-                    const uint64_t percent = (ms_since_start_shifted / ws2815.fade_time);
 
                     // abort condition
                     if (ws2815._led_index >= LED_INDEX_DONE)
                     {
+                        // percent fixed point 0 - 1024
+                        const uint64_t ms_since_start_shifted = (rcc::getSystick() - ws2815._command_start_systick) << 10;
+                        const uint64_t percent = (ms_since_start_shifted / ws2815.fade_time);
                         ws2815._led_index = LED_INDEX_START;
                         if (percent >= 1025 || ws2815._abort)
                         {
-                            util::toggle_onboard();
 
                             ws2815._current_state = WS2815::IDLE;
                             return;
@@ -293,6 +264,9 @@ namespace ws2815
 
                     if (ws2815._led_index == LED_INDEX_START)
                     {
+                        // percent fixed point 0 - 1024
+                        const uint64_t ms_since_start_shifted = (rcc::getSystick() - ws2815._command_start_systick) << 10;
+                        const uint64_t percent = (ms_since_start_shifted / ws2815.fade_time);
 
                         auto next_color = Color(
                             math::lerp(ws2815.fade_start_color.r(), ws2815.target_color.r(), percent),
@@ -329,25 +303,29 @@ namespace ws2815
     void test()
     {
         printf("WS2815 test\n");
-
-        static int counter = 0;
-
-        switch (counter % 3)
+        while (true)
         {
-        case 0:
+            static int counter = 0;
 
-            fade_to_color(Color{0xFF, 0x00, 0x00}, 2000);
-            break;
-        case 1:
-            fade_to_color(Color{0x00, 0xFF, 0x00}, 2000);
-            break;
+            switch (counter % 3)
+            {
+            case 0:
 
-        case 2:
-            fade_to_color(Color{0x00, 0x00, 0xFF}, 2000);
-            break;
+                fade_to_color(Color{0xFF, 0x00, 0x00}, 2000);
+                break;
+            case 1:
+                fade_to_color(Color{0x00, 0xFF, 0x00}, 2000);
+                break;
+
+            case 2:
+                fade_to_color(Color{0x00, 0x00, 0xFF}, 2000);
+                break;
+            }
+
+            counter++;
+
+            WAIT_LED_STRIP_IDLE;
         }
-
-        counter++;
     }
 
     void WS2815::abort_if_running()
