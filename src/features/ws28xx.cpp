@@ -27,11 +27,13 @@ namespace ws2815
             _current_color_all_leds.r(),
             _current_color_all_leds.b()};
 
+        auto target = selected_buffer_1 ? _current_color_dma_buffer_2 : _current_color_dma_buffer_1;
+
         for (int byte = 0; byte < 3; byte++)
         {
             for (int i = 0; i < 8; i++)
             {
-                _current_color_dma_buffer[(7 - i) + 8 * byte] = grb[byte] & (1 << i) ? CODE_1_CCR : CODE_0_CCR;
+                target[(7 - i) + 8 * byte] = grb[byte] & (1 << i) ? CODE_1_CCR : CODE_0_CCR;
             }
         }
     }
@@ -181,14 +183,13 @@ namespace ws2815
                         SET_BIT(DMA1_Channel1->CCR, DMA_CCR_MINC);
 
                         DMA1_Channel1->CNDTR = DMA_TRANSFERS_PER_LED;
-                        DMA1_Channel1->CMAR = (uint32_t)(&ws2815._current_color_dma_buffer);
+                        DMA1_Channel1->CMAR = (uint32_t)(ws2815.get_dma_pointer());
                     }
+                    SET_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);
                 }
                 // run conditions
 
                 _led_index++;
-
-                SET_BIT(DMA1_Channel1->CCR, DMA_CCR_EN);
             }
         }
 #ifdef __cplusplus
@@ -198,38 +199,35 @@ namespace ws2815
     void test()
     {
         printf("WS2815 test\n");
-        if (ws2815.busy() == false)
+        static int counter = 0;
+
+        switch (counter % 3)
         {
-            static int counter = 0;
-
-            switch (counter % 3)
-            {
-            case 0:
-            {
-                const auto c = Color{0xFF, 0x00, 0x00};
-                ws2815.fade_to_color(c);
-                // ws2815.to_color(c);
-                break;
-            }
-            case 1:
-            {
-                const auto c = Color{0x00, 0xFF, 0x00};
-                ws2815.fade_to_color(c);
-                // ws2815.to_color(c);
-                break;
-            }
-
-            case 2:
-            {
-                const auto c = Color{0x00, 0x00, 0xFF};
-                ws2815.fade_to_color(c);
-                // ws2815.to_color(c);
-                break;
-            }
-            }
-
-            counter++;
+        case 0:
+        {
+            const auto c = Color{0xFF, 0x00, 0x00};
+            // ws2815.fade_to_color(c);
+            ws2815.to_color(c);
+            break;
         }
+        case 1:
+        {
+            const auto c = Color{0x00, 0xFF, 0x00};
+            // ws2815.fade_to_color(c);
+            ws2815.to_color(c);
+            break;
+        }
+
+        case 2:
+        {
+            const auto c = Color{0x00, 0x00, 0xFF};
+            // ws2815.fade_to_color(c);
+            ws2815.to_color(c);
+            break;
+        }
+        }
+
+        counter++;
     }
 
     void WS2815::process()

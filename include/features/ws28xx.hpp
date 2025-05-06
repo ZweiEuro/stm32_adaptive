@@ -155,9 +155,15 @@ namespace ws2815
 
         _commands current_cmd = _commands::IDLE;
 
-    public: // public so the ISR can see them
-            // the current DMA that is cycled to the LEDs
-        uint8_t _current_color_dma_buffer[24] = {0};
+    private:
+        bool selected_buffer_1 = true;
+
+        // public so the ISR can see them
+        // the current DMA that is cycled to the LEDs
+        uint8_t _current_color_dma_buffer_1[24] = {0};
+        uint8_t _current_color_dma_buffer_2[24] = {0};
+
+    public:
         Color _current_color_all_leds = Color(0, 0, 0); // the current Color representation of the DMA buffer
 
         // command start systick
@@ -180,6 +186,18 @@ namespace ws2815
         void fade_to_color(const Color &c, const uint32_t fade_time = 1000);
 
         bool busy() { return current_cmd != IDLE; }
+
+        inline auto get_dma_pointer()
+        {
+            if ((selected_buffer_1 = !selected_buffer_1)) // evaluates to the NEXT buffer
+            {
+                return _current_color_dma_buffer_1;
+            }
+            else
+            {
+                return _current_color_dma_buffer_2;
+            }
+        }
     };
 
     extern WS2815 ws2815;
