@@ -12,6 +12,21 @@ using namespace math;
 namespace ws2815
 {
 
+    Color::Color(uint8_t r, uint8_t g, uint8_t b)
+    {
+        _color[0] = r;
+        _color[1] = g;
+        _color[2] = b;
+    }
+
+    Color Color::lerp(const Color &a, const Color &b, const int percent)
+    {
+        return Color(
+            math::lerp(a.r(), b.r(), percent),
+            math::lerp(a.g(), b.g(), percent),
+            math::lerp(a.b(), b.b(), percent));
+    }
+
     WS2815 ws2815;
 
     void WS2815::set_dma_timings_for_color(const Color &color)
@@ -205,11 +220,13 @@ namespace ws2815
         const auto r = Color{0xFF, 0x00, 0x00};
         const auto g = Color{0x00, 0xFF, 0x00};
         const auto b = Color{0x00, 0x00, 0xFF};
-        switch (counter % 3)
+        const auto lila = Color::lerp(b, r, 512);
+
+        switch (counter % 4)
         {
         case 0:
         {
-            ws2815.fade_between_colors(r, g);
+            ws2815.fade_between_colors(r, g, 500);
             //  ws2815.to_color(c);
             break;
         }
@@ -223,6 +240,13 @@ namespace ws2815
         case 2:
         {
             ws2815.fade_to_color(b);
+            //  ws2815.to_color(c);
+            break;
+        }
+
+        case 3:
+        {
+            ws2815.fade_to_color(lila);
             //  ws2815.to_color(c);
             break;
         }
@@ -297,7 +321,7 @@ namespace ws2815
         current_cmd = _commands::TO_COLOR;
     }
 
-    void WS2815::fade_between_colors(const Color &a, const Color &b)
+    void WS2815::fade_between_colors(const Color &a, const Color &b, const uint32_t fade_time)
     {
         ws2815.fade_between_color_a = a;
         ws2815.fade_between_color_b = b;

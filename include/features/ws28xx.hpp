@@ -8,13 +8,10 @@ namespace ws2815
     public:
         uint8_t _color[3] = {0, 0, 0};
 
-        Color(uint8_t r, uint8_t g, uint8_t b)
-        {
-            _color[0] = r;
-            _color[1] = g;
-            _color[2] = b;
-        }
+        Color(uint8_t r, uint8_t g, uint8_t b);
         Color() {}
+
+        static Color lerp(const Color &a, const Color &b, const int percent);
 
         uint8_t r() const { return _color[0]; }
         uint8_t g() const { return _color[1]; }
@@ -180,7 +177,7 @@ namespace ws2815
         void process();
         void to_color(const Color &c);
         void fade_to_color(const Color &c, const uint32_t fade_time = 1000);
-        void fade_between_colors(const Color &a, const Color &b);
+        void fade_between_colors(const Color &a, const Color &b, const uint32_t fade_time = 1000);
 
         bool busy() { return current_cmd != IDLE; }
 
