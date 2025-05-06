@@ -156,6 +156,7 @@ namespace ws2815
         _commands current_cmd = _commands::IDLE;
 
     private:
+        bool new_color = false;
         bool selected_buffer_1 = true;
 
         // public so the ISR can see them
@@ -189,7 +190,13 @@ namespace ws2815
 
         inline auto get_dma_pointer()
         {
-            if ((selected_buffer_1 = !selected_buffer_1)) // evaluates to the NEXT buffer
+            if (new_color)
+            {
+                selected_buffer_1 = !selected_buffer_1;
+                new_color = false;
+            }
+
+            if (selected_buffer_1)
             {
                 return _current_color_dma_buffer_1;
             }

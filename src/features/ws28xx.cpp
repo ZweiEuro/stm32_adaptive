@@ -36,6 +36,7 @@ namespace ws2815
                 target[(7 - i) + 8 * byte] = grb[byte] & (1 << i) ? CODE_1_CCR : CODE_0_CCR;
             }
         }
+        new_color = true;
     }
 
     inline void setup_PWM()
@@ -206,23 +207,23 @@ namespace ws2815
         case 0:
         {
             const auto c = Color{0xFF, 0x00, 0x00};
-            // ws2815.fade_to_color(c);
-            ws2815.to_color(c);
+            ws2815.fade_to_color(c);
+            //  ws2815.to_color(c);
             break;
         }
         case 1:
         {
             const auto c = Color{0x00, 0xFF, 0x00};
-            // ws2815.fade_to_color(c);
-            ws2815.to_color(c);
+            ws2815.fade_to_color(c);
+            //  ws2815.to_color(c);
             break;
         }
 
         case 2:
         {
             const auto c = Color{0x00, 0x00, 0xFF};
-            // ws2815.fade_to_color(c);
-            ws2815.to_color(c);
+            ws2815.fade_to_color(c);
+            //  ws2815.to_color(c);
             break;
         }
         }
