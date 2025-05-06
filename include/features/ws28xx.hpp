@@ -16,16 +16,6 @@ namespace ws2815
         }
         Color() {}
 
-        void print() const
-        {
-            printf("0x%X 0x%X 0x%X", _color[0], _color[1], _color[2]);
-        }
-
-        void println() const
-        {
-            printf("0x%X 0x%X 0x%X\n", _color[0], _color[1], _color[2]);
-        }
-
         uint8_t r() const { return _color[0]; }
         uint8_t g() const { return _color[1]; }
         uint8_t b() const { return _color[2]; }
@@ -151,6 +141,7 @@ namespace ws2815
             // Functionality
             TO_COLOR,
             FADE_TO_COLOR,
+            FADE_BETWEEN_COLORS
         };
 
         _commands current_cmd = _commands::IDLE;
@@ -176,6 +167,10 @@ namespace ws2815
         Color fade_start_color;
         Color fade_target_color;
 
+        bool current_color_a = true;
+        Color fade_between_color_a;
+        Color fade_between_color_b;
+
         WS2815();
 
         // set current color
@@ -185,6 +180,7 @@ namespace ws2815
         void process();
         void to_color(const Color &c);
         void fade_to_color(const Color &c, const uint32_t fade_time = 1000);
+        void fade_between_colors(const Color &a, const Color &b);
 
         bool busy() { return current_cmd != IDLE; }
 

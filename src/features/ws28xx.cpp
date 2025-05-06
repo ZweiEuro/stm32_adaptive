@@ -202,27 +202,27 @@ namespace ws2815
         printf("WS2815 test\n");
         static int counter = 0;
 
+        const auto r = Color{0xFF, 0x00, 0x00};
+        const auto g = Color{0x00, 0xFF, 0x00};
+        const auto b = Color{0x00, 0x00, 0xFF};
         switch (counter % 3)
         {
         case 0:
         {
-            const auto c = Color{0xFF, 0x00, 0x00};
-            ws2815.fade_to_color(c);
+            ws2815.fade_between_colors(r, g);
             //  ws2815.to_color(c);
             break;
         }
         case 1:
         {
-            const auto c = Color{0x00, 0xFF, 0x00};
-            ws2815.fade_to_color(c);
+            ws2815.fade_to_color(g);
             //  ws2815.to_color(c);
             break;
         }
 
         case 2:
         {
-            const auto c = Color{0x00, 0x00, 0xFF};
-            ws2815.fade_to_color(c);
+            ws2815.fade_to_color(b);
             //  ws2815.to_color(c);
             break;
         }
@@ -242,6 +242,7 @@ namespace ws2815
             return;
         }
         break;
+        case _commands::FADE_BETWEEN_COLORS:
         case _commands::FADE_TO_COLOR:
         {
 
@@ -250,6 +251,26 @@ namespace ws2815
 
             if (percent >= 1025)
             {
+
+                if (current_cmd == FADE_BETWEEN_COLORS)
+                {
+                    ws2815._command_start_systick = rcc::getSystick();
+
+                    if (current_color_a)
+                    {
+                        fade_start_color = fade_between_color_a;
+                        fade_target_color = fade_between_color_b;
+                    }
+                    else
+                    {
+                        fade_start_color = fade_between_color_b;
+                        fade_target_color = fade_between_color_a;
+                    }
+
+                    current_color_a = !current_color_a;
+                    return;
+                }
+
                 current_cmd = _commands::IDLE;
                 return;
             }
@@ -271,20 +292,27 @@ namespace ws2815
 
     void WS2815::to_color(const Color &c)
     {
-        printf("to color");
-        c.print();
-        printf("\n");
 
         ws2815.set_dma_timings_for_color(c);
         current_cmd = _commands::TO_COLOR;
     }
 
+    void WS2815::fade_between_colors(const Color &a, const Color &b)
+    {
+        ws2815.fade_between_color_a = a;
+        ws2815.fade_between_color_b = b;
+        ws2815._command_start_systick = rcc::getSystick();
+
+        ws2815.fade_start_color = ws2815._current_color_all_leds;
+        ws2815.fade_time = fade_time;
+        fade_target_color = a;
+        current_color_a = true;
+
+        current_cmd = _commands::FADE_BETWEEN_COLORS;
+    }
+
     void WS2815::fade_to_color(const Color &c, const uint32_t fade_time)
     {
-
-        printf("fade to color: ");
-        c.print();
-        printf("\n");
 
         ws2815.fade_time = fade_time;
         ws2815.fade_start_color = ws2815._current_color_all_leds;
