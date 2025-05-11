@@ -1,0 +1,92 @@
+[
+    {
+        "command": "/home/zweieuro/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-gcc -mthumb -mcpu=cortex-m0 -ggdb -g3 -x assembler-with-cpp -DPLATFORMIO=60119 -DSTM32F030x6 -DSTM32F0 -DF_CPU=48000000L -D__PLATFORMIO_BUILD_DEBUG__ -DSTM32F0 -I/home/zweieuro/.platformio/packages/framework-cmsis/CMSIS/Include -I/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Include -c -o .pio/build/demo_f030f4/FrameworkCMSIS/gcc/startup_stm32f030x6.o /home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Source/Templates/gcc/startup_stm32f030x6.S",
+        "directory": "/home/zweieuro/Documents/private/stm32/stm32_arduino",
+        "file": "/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Source/Templates/gcc/startup_stm32f030x6.S",
+        "output": ".pio/build/demo_f030f4/FrameworkCMSIS/gcc/startup_stm32f030x6.o"
+    },
+    {
+        "command": "/home/zweieuro/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-gcc -o .pio/build/demo_f030f4/FrameworkCMSIS/system_stm32f0xx.o -c -ffunction-sections -fdata-sections -Wall -mthumb -mcpu=cortex-m0 -Og -Os -ggdb -g3 -fno-exceptions -DPLATFORMIO=60119 -DSTM32F030x6 -DSTM32F0 -DF_CPU=48000000L -D__PLATFORMIO_BUILD_DEBUG__ -DSTM32F0 -I/home/zweieuro/.platformio/packages/framework-cmsis/CMSIS/Include -I/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Include /home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Source/Templates/system_stm32f0xx.c",
+        "directory": "/home/zweieuro/Documents/private/stm32/stm32_arduino",
+        "file": "/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Source/Templates/system_stm32f0xx.c",
+        "output": ".pio/build/demo_f030f4/FrameworkCMSIS/system_stm32f0xx.o"
+    },
+    {
+        "command": "/home/zweieuro/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-g++ -o .pio/build/demo_f030f4/src/classes/PeriodPattern.o -c -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -Wall -mthumb -mcpu=cortex-m0 -Og -Os -ggdb -g3 -fno-exceptions -DPLATFORMIO=60119 -DSTM32F030x6 -DSTM32F0 -DF_CPU=48000000L -D__PLATFORMIO_BUILD_DEBUG__ -DSTM32F0 -Iinclude -Isrc -I/home/zweieuro/.platformio/packages/framework-cmsis/CMSIS/Include -I/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Include src/classes/PeriodPattern.cpp",
+        "directory": "/home/zweieuro/Documents/private/stm32/stm32_arduino",
+        "file": "src/classes/PeriodPattern.cpp",
+        "output": ".pio/build/demo_f030f4/src/classes/PeriodPattern.o"
+    },
+    {
+        "command": "/home/zweieuro/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-g++ -o .pio/build/demo_f030f4/src/features/math.o -c -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -Wall -mthumb -mcpu=cortex-m0 -Og -Os -ggdb -g3 -fno-exceptions -DPLATFORMIO=60119 -DSTM32F030x6 -DSTM32F0 -DF_CPU=48000000L -D__PLATFORMIO_BUILD_DEBUG__ -DSTM32F0 -Iinclude -Isrc -I/home/zweieuro/.platformio/packages/framework-cmsis/CMSIS/Include -I/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Include src/features/math.cpp",
+        "directory": "/home/zweieuro/Documents/private/stm32/stm32_arduino",
+        "file": "src/features/math.cpp",
+        "output": ".pio/build/demo_f030f4/src/features/math.o"
+    },
+    {
+        "command": "/home/zweieuro/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-g++ -o .pio/build/demo_f030f4/src/features/ws28xx.o -c -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -Wall -mthumb -mcpu=cortex-m0 -Og -Os -ggdb -g3 -fno-exceptions -DPLATFORMIO=60119 -DSTM32F030x6 -DSTM32F0 -DF_CPU=48000000L -D__PLATFORMIO_BUILD_DEBUG__ -DSTM32F0 -Iinclude -Isrc -I/home/zweieuro/.platformio/packages/framework-cmsis/CMSIS/Include -I/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Include src/features/ws28xx.cpp",
+        "directory": "/home/zweieuro/Documents/private/stm32/stm32_arduino",
+        "file": "src/features/ws28xx.cpp",
+        "output": ".pio/build/demo_f030f4/src/features/ws28xx.o"
+    },
+    {
+        "command": "/home/zweieuro/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-g++ -o .pio/build/demo_f030f4/src/input_capture.o -c -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -Wall -mthumb -mcpu=cortex-m0 -Og -Os -ggdb -g3 -fno-exceptions -DPLATFORMIO=60119 -DSTM32F030x6 -DSTM32F0 -DF_CPU=48000000L -D__PLATFORMIO_BUILD_DEBUG__ -DSTM32F0 -Iinclude -Isrc -I/home/zweieuro/.platformio/packages/framework-cmsis/CMSIS/Include -I/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Include src/input_capture.cpp",
+        "directory": "/home/zweieuro/Documents/private/stm32/stm32_arduino",
+        "file": "src/input_capture.cpp",
+        "output": ".pio/build/demo_f030f4/src/input_capture.o"
+    },
+    {
+        "command": "/home/zweieuro/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-g++ -o .pio/build/demo_f030f4/src/interface.o -c -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -Wall -mthumb -mcpu=cortex-m0 -Og -Os -ggdb -g3 -fno-exceptions -DPLATFORMIO=60119 -DSTM32F030x6 -DSTM32F0 -DF_CPU=48000000L -D__PLATFORMIO_BUILD_DEBUG__ -DSTM32F0 -Iinclude -Isrc -I/home/zweieuro/.platformio/packages/framework-cmsis/CMSIS/Include -I/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Include src/interface.cpp",
+        "directory": "/home/zweieuro/Documents/private/stm32/stm32_arduino",
+        "file": "src/interface.cpp",
+        "output": ".pio/build/demo_f030f4/src/interface.o"
+    },
+    {
+        "command": "/home/zweieuro/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-g++ -o .pio/build/demo_f030f4/src/main.o -c -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -Wall -mthumb -mcpu=cortex-m0 -Og -Os -ggdb -g3 -fno-exceptions -DPLATFORMIO=60119 -DSTM32F030x6 -DSTM32F0 -DF_CPU=48000000L -D__PLATFORMIO_BUILD_DEBUG__ -DSTM32F0 -Iinclude -Isrc -I/home/zweieuro/.platformio/packages/framework-cmsis/CMSIS/Include -I/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Include src/main.cpp",
+        "directory": "/home/zweieuro/Documents/private/stm32/stm32_arduino",
+        "file": "src/main.cpp",
+        "output": ".pio/build/demo_f030f4/src/main.o"
+    },
+    {
+        "command": "/home/zweieuro/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-g++ -o .pio/build/demo_f030f4/src/rcc.o -c -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -Wall -mthumb -mcpu=cortex-m0 -Og -Os -ggdb -g3 -fno-exceptions -DPLATFORMIO=60119 -DSTM32F030x6 -DSTM32F0 -DF_CPU=48000000L -D__PLATFORMIO_BUILD_DEBUG__ -DSTM32F0 -Iinclude -Isrc -I/home/zweieuro/.platformio/packages/framework-cmsis/CMSIS/Include -I/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Include src/rcc.cpp",
+        "directory": "/home/zweieuro/Documents/private/stm32/stm32_arduino",
+        "file": "src/rcc.cpp",
+        "output": ".pio/build/demo_f030f4/src/rcc.o"
+    },
+    {
+        "command": "/home/zweieuro/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-g++ -o .pio/build/demo_f030f4/src/sender.o -c -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -Wall -mthumb -mcpu=cortex-m0 -Og -Os -ggdb -g3 -fno-exceptions -DPLATFORMIO=60119 -DSTM32F030x6 -DSTM32F0 -DF_CPU=48000000L -D__PLATFORMIO_BUILD_DEBUG__ -DSTM32F0 -Iinclude -Isrc -I/home/zweieuro/.platformio/packages/framework-cmsis/CMSIS/Include -I/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Include src/sender.cpp",
+        "directory": "/home/zweieuro/Documents/private/stm32/stm32_arduino",
+        "file": "src/sender.cpp",
+        "output": ".pio/build/demo_f030f4/src/sender.o"
+    },
+    {
+        "command": "/home/zweieuro/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-g++ -o .pio/build/demo_f030f4/src/storage/flash.o -c -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -Wall -mthumb -mcpu=cortex-m0 -Og -Os -ggdb -g3 -fno-exceptions -DPLATFORMIO=60119 -DSTM32F030x6 -DSTM32F0 -DF_CPU=48000000L -D__PLATFORMIO_BUILD_DEBUG__ -DSTM32F0 -Iinclude -Isrc -I/home/zweieuro/.platformio/packages/framework-cmsis/CMSIS/Include -I/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Include src/storage/flash.cpp",
+        "directory": "/home/zweieuro/Documents/private/stm32/stm32_arduino",
+        "file": "src/storage/flash.cpp",
+        "output": ".pio/build/demo_f030f4/src/storage/flash.o"
+    },
+    {
+        "command": "/home/zweieuro/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-g++ -o .pio/build/demo_f030f4/src/sys/FaultHandler.o -c -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -Wall -mthumb -mcpu=cortex-m0 -Og -Os -ggdb -g3 -fno-exceptions -DPLATFORMIO=60119 -DSTM32F030x6 -DSTM32F0 -DF_CPU=48000000L -D__PLATFORMIO_BUILD_DEBUG__ -DSTM32F0 -Iinclude -Isrc -I/home/zweieuro/.platformio/packages/framework-cmsis/CMSIS/Include -I/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Include src/sys/FaultHandler.cpp",
+        "directory": "/home/zweieuro/Documents/private/stm32/stm32_arduino",
+        "file": "src/sys/FaultHandler.cpp",
+        "output": ".pio/build/demo_f030f4/src/sys/FaultHandler.o"
+    },
+    {
+        "command": "/home/zweieuro/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-g++ -o .pio/build/demo_f030f4/src/sys/printf_getchar.o -c -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -Wall -mthumb -mcpu=cortex-m0 -Og -Os -ggdb -g3 -fno-exceptions -DPLATFORMIO=60119 -DSTM32F030x6 -DSTM32F0 -DF_CPU=48000000L -D__PLATFORMIO_BUILD_DEBUG__ -DSTM32F0 -Iinclude -Isrc -I/home/zweieuro/.platformio/packages/framework-cmsis/CMSIS/Include -I/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Include src/sys/printf_getchar.cpp",
+        "directory": "/home/zweieuro/Documents/private/stm32/stm32_arduino",
+        "file": "src/sys/printf_getchar.cpp",
+        "output": ".pio/build/demo_f030f4/src/sys/printf_getchar.o"
+    },
+    {
+        "command": "/home/zweieuro/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-g++ -o .pio/build/demo_f030f4/src/sys/usart.o -c -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -Wall -mthumb -mcpu=cortex-m0 -Og -Os -ggdb -g3 -fno-exceptions -DPLATFORMIO=60119 -DSTM32F030x6 -DSTM32F0 -DF_CPU=48000000L -D__PLATFORMIO_BUILD_DEBUG__ -DSTM32F0 -Iinclude -Isrc -I/home/zweieuro/.platformio/packages/framework-cmsis/CMSIS/Include -I/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Include src/sys/usart.cpp",
+        "directory": "/home/zweieuro/Documents/private/stm32/stm32_arduino",
+        "file": "src/sys/usart.cpp",
+        "output": ".pio/build/demo_f030f4/src/sys/usart.o"
+    },
+    {
+        "command": "/home/zweieuro/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-g++ -o .pio/build/demo_f030f4/src/util.o -c -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -Wall -mthumb -mcpu=cortex-m0 -Og -Os -ggdb -g3 -fno-exceptions -DPLATFORMIO=60119 -DSTM32F030x6 -DSTM32F0 -DF_CPU=48000000L -D__PLATFORMIO_BUILD_DEBUG__ -DSTM32F0 -Iinclude -Isrc -I/home/zweieuro/.platformio/packages/framework-cmsis/CMSIS/Include -I/home/zweieuro/.platformio/packages/framework-cmsis-stm32f0/Include src/util.cpp",
+        "directory": "/home/zweieuro/Documents/private/stm32/stm32_arduino",
+        "file": "src/util.cpp",
+        "output": ".pio/build/demo_f030f4/src/util.o"
+    }
+]
