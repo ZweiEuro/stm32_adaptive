@@ -9,6 +9,7 @@ except:
 import json
 import time
 import serial
+import os
 
 BAUD_RATE = 9600
 
@@ -62,6 +63,16 @@ def enable_capture(source, target, env):
     # enable capture mode
     stm32.write(int(ord('s')).to_bytes(1, 'big'))
     stm32.close()
+
+
+
+
+# always include compile commands inside construction
+# include toolchain paths
+env.Replace(COMPILATIONDB_INCLUDE_TOOLCHAIN=True)
+
+# override compilation DB path
+env.Replace(COMPILATIONDB_PATH=os.path.join("$BUILD_DIR", "compile_commands.json"))
 
 
 if __name__ == '__main__':
